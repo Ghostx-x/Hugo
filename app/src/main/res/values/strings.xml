@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Hugo</string>
+    <string name="welcome_title">Welcome to Hugo! 🐶</string>
+    <string name="welcome_subtitle">Connecting Dogs with Loving Walkers!</string>
+    <string name="btn_signIn">Get Started</string>
+    <string name="btn_login">Log In</string>
+</resources>
