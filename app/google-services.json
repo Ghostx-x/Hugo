@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1050809980922",
+    "project_id": "hugo-a189a",
+    "storage_bucket": "hugo-a189a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1050809980922:android:fed6b0964b382bf3933643",
+        "android_client_info": {
+          "package_name": "com.example.hugo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCGibRGs9ciDAn4VHrN3mKCq1FLYn0NMsw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
