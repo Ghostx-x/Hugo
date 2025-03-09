@@ -12,17 +12,30 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Hugo"
         tools:targetApi="31">
-
-        <!-- WelcomeActivity is the main launcher activity -->
+        <activity
+            android:name=".SignInFirst"
+            android:exported="false" />
+        <activity
+            android:name=".bottomnavbar.story.RecyclerViewAdapter"
+            android:exported="false" />
+        <activity
+            android:name=".DogTrainerActivity"
+            android:exported="false" />
+        <activity
+            android:name=".DogWalkerActivity"
+            android:exported="false" />
+        <activity
+            android:name=".DogOwnerActivity"
+            android:exported="false" /> <!-- WelcomeActivity is the main launcher activity -->
         <activity
             android:name=".WelcomeActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".LoginActivity"
             android:exported="false" />

@@ -2,9 +2,84 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/milky"
     tools:context=".SignInActivity">
+
+
+    <TextView
+        android:id="@+id/questionText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="184dp"
+        android:layout_marginEnd="20dp"
+        android:text="How do you want to use the app?"
+        android:fontFamily="@font/baloo2_semibold"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.493"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <RadioGroup
+        android:id="@+id/radioGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="100dp"
+        android:padding="20dp"
+        app:layout_constraintTop_toBottomOf="@id/questionText"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <RadioButton
+            android:id="@+id/radioOwner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="I am a dog owner looking for a walker"
+            android:fontFamily="@font/quicksand_semibold"
+            android:textSize="16sp"
+            android:padding="10dp"
+            android:textColor="@color/black" />
+
+        <RadioButton
+            android:id="@+id/radioWalker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="I am a dog walker looking for jobs"
+            android:fontFamily="@font/quicksand_semibold"
+            android:textSize="16sp"
+            android:padding="10dp"
+            android:textColor="@color/black" />
+
+        <RadioButton
+            android:id="@+id/radioTrainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="I am a dog trainer / veterinarian"
+            android:fontFamily="@font/quicksand_semibold"
+            android:textSize="16sp"
+            android:padding="10dp"
+            android:textColor="@color/black" />
+
+    </RadioGroup>
+
+    <Button
+        android:id="@+id/btn_signIn"
+        android:layout_width="300dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="60dp"
+        app:backgroundTint="@null"
+        android:background="@drawable/btn_darkblue"
+        android:fontFamily="@font/quicksand_bold"
+        android:text="Next"
+        android:textColor="@color/milky"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/radioGroup" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
