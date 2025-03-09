@@ -33,7 +33,7 @@ public class StoryFragment extends Fragment {
             images = getArguments().getIntegerArrayList(ARG_IMAGES);
         }
 
-        // Initialize ViewPager2 and adapter here
+
         ViewPager2 viewPager = view.findViewById(R.id.story_view_pager);
         StoryAdapter adapter = new StoryAdapter(images);
         viewPager.setAdapter(adapter);

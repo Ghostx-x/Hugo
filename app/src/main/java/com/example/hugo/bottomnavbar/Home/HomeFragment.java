@@ -23,18 +23,16 @@ public class HomeFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
-        // Initialize bottom navigation view
         bottomNavigationView = getActivity().findViewById(R.id.bottom_navigation);
 
-        // Hide the bottom navigation view immediately when the fragment is created
         bottomNavigationView.setVisibility(View.GONE);
 
-        // Find the CardViews
+
         CardView cardView1 = view.findViewById(R.id.card_best_foods);
         CardView cardView2 = view.findViewById(R.id.card_behavior_training);
         CardView cardView3 = view.findViewById(R.id.card_health_aid);
 
-        // Set Click Listeners for Cards
+
         cardView1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -67,7 +65,7 @@ public class HomeFragment extends Fragment {
 
     private void openStoryFragment(ArrayList<Integer> images) {
         if (images != null && !images.isEmpty()) {
-            // Hide the bottom navigation bar
+
             bottomNavigationView.setVisibility(View.GONE);
 
             StoryFragment storyFragment = StoryFragment.newInstance(images);
@@ -76,15 +74,14 @@ public class HomeFragment extends Fragment {
                     .addToBackStack(null)
                     .commit();
         } else {
-            // Handle error: empty or null list
-            // For example, show a Toast or log an error
+
         }
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        // Show the bottom navigation bar when the fragment is paused or when the back button is pressed
+
         if (bottomNavigationView != null) {
             bottomNavigationView.setVisibility(View.VISIBLE);
         }

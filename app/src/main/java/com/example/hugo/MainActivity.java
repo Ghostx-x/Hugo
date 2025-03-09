@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
 
-            // Replace the fragment correctly
+
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, selectedFragment)
                     .commit();
@@ -57,7 +57,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    // Methods to hide and show bottom navigation bar
     public void hideBottomNavigationBar() {
         if (bottomNavigationView != null) {
             bottomNavigationView.setVisibility(View.GONE);
@@ -70,12 +69,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Open StoryFragment with image data
+
     public void openStoryFragment(ArrayList<Integer> images) {
         StoryFragment storyFragment = StoryFragment.newInstance(images);
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, storyFragment)
-                .addToBackStack(null) // Add fragment to back stack
+                .addToBackStack(null)
                 .commit();
     }
 }

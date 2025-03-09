@@ -28,14 +28,14 @@ public class SignInFirst extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         databaseRef = FirebaseDatabase.getInstance().getReference("Users");
 
-        // Find Views
+
         nameField = findViewById(R.id.nameField);
         emailField = findViewById(R.id.emailField);
         phoneField = findViewById(R.id.phoneField);
         passwordField = findViewById(R.id.passwordField);
         registerButton = findViewById(R.id.btn_signIn_first);
 
-        // Set Register Button Click Listener
+
         registerButton.setOnClickListener(v -> registerUser());
     }
 
@@ -73,7 +73,7 @@ public class SignInFirst extends AppCompatActivity {
 
     }
 
-    // User Model Class
+
     public static class User {
         public String name, email, phone;
 
