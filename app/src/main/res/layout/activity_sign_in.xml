@@ -40,6 +40,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="I am a dog owner looking for a walker"
+            android:searchResultHighlightColor="@color/black"
             android:fontFamily="@font/quicksand_semibold"
             android:textSize="16sp"
             android:padding="10dp"

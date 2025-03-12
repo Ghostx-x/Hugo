@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -30,6 +29,7 @@
             android:hint="Name"
             android:background="@drawable/rounded_input"
             android:padding="12dp"
+            android:textColor="@color/black"
             android:textColorHint="@color/milky"
             android:fontFamily="@font/quicksand_medium"
             android:textSize="20sp"
@@ -43,37 +43,43 @@
             android:hint="Email"
             android:background="@drawable/rounded_input"
             android:padding="12dp"
+            android:textColor="@color/black"
             android:textColorHint="@color/milky"
             android:fontFamily="@font/quicksand_medium"
             android:textSize="20sp"
             android:inputType="textEmailAddress"
             android:layout_marginBottom="12dp"/>
 
-        <EditText
-            android:id="@+id/phoneField"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Phone"
-            android:background="@drawable/rounded_input"
-            android:padding="12dp"
-            android:textColorHint="@color/milky"
-            android:fontFamily="@font/quicksand_medium"
-            android:textSize="20sp"
-            android:inputType="phone"
-            android:layout_marginBottom="12dp"/>
+            android:layout_height="wrap_content">
 
-        <EditText
-            android:id="@+id/passwordField"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Create a password"
-            android:background="@drawable/rounded_input"
-            android:padding="12dp"
-            android:textColorHint="@color/milky"
-            android:fontFamily="@font/quicksand_medium"
-            android:textSize="20sp"
-            android:inputType="textPassword"
-            android:layout_marginBottom="12dp"/>
+            <EditText
+                android:id="@+id/passwordField"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Create a password"
+                android:background="@drawable/rounded_input"
+                android:padding="12dp"
+                android:textColor="@color/black"
+                android:textColorHint="@color/milky"
+                android:fontFamily="@font/quicksand_medium"
+                android:textSize="20sp"
+                android:inputType="textPassword"
+                android:layout_marginBottom="12dp"
+                android:paddingEnd="48dp"/>
+
+            <ImageView
+                android:id="@+id/passwordToggle"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="12dp"
+                android:layout_marginBottom="10dp"
+                android:src="@drawable/ic_eye_off"
+                android:contentDescription="Toggle Password Visibility"/>
+        </RelativeLayout>
 
         <Button
             android:id="@+id/btn_signIn_first"
@@ -86,6 +92,12 @@
             android:fontFamily="@font/quicksand_bold"
             android:textColor="@color/milky"
             android:layout_marginTop="40dp"/>
+
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/fragment_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
 
     </LinearLayout>
 

@@ -33,8 +33,9 @@ public class SignInActivity extends AppCompatActivity {
 
                     if (selectedRadioButton.getId() == R.id.radioOwner) {
                         Toast.makeText(SignInActivity.this, "You selected: Dog Owner", Toast.LENGTH_SHORT).show();
-                        Intent intent = new Intent(SignInActivity.this, MainActivity.class);
-                        startActivity(intent);
+                        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new DogOwnerDetailsFragmentOne())
+                                .addToBackStack(null)
+                                .commit();
                     } else if (selectedRadioButton.getId() == R.id.radioWalker) {
                         Toast.makeText(SignInActivity.this, "You selected: Dog Walker", Toast.LENGTH_SHORT).show();
                         Intent intent = new Intent(SignInActivity.this, DogWalkerActivity.class);

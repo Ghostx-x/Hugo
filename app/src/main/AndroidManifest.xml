@@ -16,8 +16,11 @@
             android:name=".SignInFirst"
             android:exported="false" />
         <activity
-            android:name=".bottomnavbar.story.RecyclerViewAdapter"
+            android:name=".SignInActivity"
             android:exported="false" />
+<!--        <activity-->
+<!--            android:name=".bottomnavbar.story.RecyclerViewAdapter"-->
+<!--            android:exported="false" />-->
         <activity
             android:name=".DogTrainerActivity"
             android:exported="false" />
@@ -26,7 +29,7 @@
             android:exported="false" />
         <activity
             android:name=".DogOwnerActivity"
-            android:exported="false" /> <!-- WelcomeActivity is the main launcher activity -->
+            android:exported="false" />
         <activity
             android:name=".WelcomeActivity"
             android:exported="true">
@@ -38,9 +41,6 @@
         </activity>
         <activity
             android:name=".LoginActivity"
-            android:exported="false" />
-        <activity
-            android:name=".SignInActivity"
             android:exported="false" />
         <activity
             android:name=".MainActivity"

@@ -24,13 +24,13 @@ public class HomeFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
         bottomNavigationView = getActivity().findViewById(R.id.bottom_navigation);
-
-        bottomNavigationView.setVisibility(View.GONE);
+        bottomNavigationView.setVisibility(View.VISIBLE);
 
 
         CardView cardView1 = view.findViewById(R.id.card_best_foods);
         CardView cardView2 = view.findViewById(R.id.card_behavior_training);
         CardView cardView3 = view.findViewById(R.id.card_health_aid);
+
 
 
         cardView1.setOnClickListener(new View.OnClickListener() {
@@ -66,7 +66,7 @@ public class HomeFragment extends Fragment {
     private void openStoryFragment(ArrayList<Integer> images) {
         if (images != null && !images.isEmpty()) {
 
-            bottomNavigationView.setVisibility(View.GONE);
+//            bottomNavigationView.setVisibility(View.VISIBLE);
 
             StoryFragment storyFragment = StoryFragment.newInstance(images);
             getParentFragmentManager().beginTransaction()
@@ -83,7 +83,7 @@ public class HomeFragment extends Fragment {
         super.onPause();
 
         if (bottomNavigationView != null) {
-            bottomNavigationView.setVisibility(View.VISIBLE);
+            bottomNavigationView.setVisibility(View.GONE);
         }
     }
 }
