@@ -10,14 +10,14 @@
         android:id="@+id/questionText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="170dp"
+        android:layout_marginTop="108dp"
         android:fontFamily="@font/baloo2_semibold"
         android:gravity="center"
         android:text="How many dogs do you have?"
         android:textColor="@color/black"
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.563"
+        app:layout_constraintHorizontal_bias="0.496"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -25,17 +25,19 @@
         android:id="@+id/counterLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="60dp"
         android:gravity="center"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/questionText">
 
         <ImageButton
             android:id="@+id/btnDecrease"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginRight="20dp"
             android:background="@null"
             android:contentDescription="Decrease count"
             android:src="@drawable/ic_minus" />
@@ -52,8 +54,9 @@
 
         <ImageButton
             android:id="@+id/btnIncrease"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginLeft="20dp"
             android:background="@null"
             android:contentDescription="Increase count"
             android:src="@drawable/ic_plus" />
@@ -62,11 +65,35 @@
 
     <ImageView
         android:id="@+id/imageView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="80dp"
+        android:layout_width="304dp"
+        android:layout_height="246dp"
+        android:layout_marginTop="60dp"
         android:src="@drawable/dogs_img"
         app:layout_constraintTop_toBottomOf="@id/counterLayout"
-        tools:layout_editor_absoluteX="30dp" />
+        tools:layout_editor_absoluteX="51dp" />
+
+    <Button
+        android:id="@+id/btn_next"
+        android:layout_width="300dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="44dp"
+        android:background="@drawable/btn_darkblue"
+        android:fontFamily="@font/quicksand_bold"
+        android:text="Next"
+        android:textColor="@color/milky"
+        android:textSize="24sp"
+        app:backgroundTint="@null"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.495"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView" />
+
+<!--    <FrameLayout-->
+<!--        android:id="@+id/fragment_container_inner"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@id/btn_next"-->
+<!--        app:layout_constraintBottom_toBottomOf="parent"/>-->
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
