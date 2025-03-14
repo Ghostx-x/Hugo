@@ -16,8 +16,9 @@
         android:layout_marginEnd="20dp"
         android:text="How do you want to use the app?"
         android:fontFamily="@font/baloo2_semibold"
+        android:textSize="24sp"
+        android:textStyle="bold"
         android:textColor="@color/black"
-        android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.493"
         app:layout_constraintStart_toStartOf="parent"
@@ -81,7 +82,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/radioGroup" />
 
-    <!-- FrameLayout to host fragments -->
     <FrameLayout
         android:id="@+id/fragment_container"
         android:layout_width="match_parent"

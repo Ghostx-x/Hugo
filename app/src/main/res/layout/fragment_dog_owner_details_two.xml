@@ -1,14 +1,52 @@
-<?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <LinearLayout
-        android:id="@+id/questions_container"
-        android:orientation="vertical"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="16dp">
-    </LinearLayout>
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:id="@+id/questions_container"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="25dp"
+            android:layout_marginBottom="70dp"
+            android:layout_alignParentTop="true">
+
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/nested_fragment_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/questions_container"
+            android:layout_above="@id/btn_next"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp" />
+
+        <Button
+            android:id="@+id/btn_next"
+            android:layout_width="300dp"
+            android:layout_height="60dp"
+            android:layout_marginTop="200dp"
+            android:fontFamily="@font/quicksand_bold"
+            android:text="Next"
+            android:textColor="@color/milky"
+            android:textSize="24sp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="40dp"
+            android:padding="-30dp"
+            android:background="@drawable/btn_darkblue"
+            app:backgroundTint="@null"/>
+
+    </RelativeLayout>
+
+
 
 </ScrollView>
+
+
