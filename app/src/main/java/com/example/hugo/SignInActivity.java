@@ -40,23 +40,29 @@ public class SignInActivity extends AppCompatActivity {
                     if (selectedRadioButton.getId() == R.id.radioOwner) {
                         Toast.makeText(SignInActivity.this, "You selected: Dog Owner", Toast.LENGTH_SHORT).show();
 
-                        // Hide SignInActivity UI elements
                         questionText.setVisibility(View.GONE);
                         radioGroup.setVisibility(View.GONE);
                         signInButton.setVisibility(View.GONE);
 
-                        // Show the fragment container
                         fragmentContainer.setVisibility(View.VISIBLE);
 
-                        // Replace with DogOwnerDetailsFragmentOne
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.fragment_container, new DogOwnerDetailsFragmentOne())
                                 .addToBackStack(null)
                                 .commit();
                     } else if (selectedRadioButton.getId() == R.id.radioWalker) {
                         Toast.makeText(SignInActivity.this, "You selected: Dog Walker", Toast.LENGTH_SHORT).show();
-                        Intent intent = new Intent(SignInActivity.this, DogWalkerActivity.class);
-                        startActivity(intent);
+                        questionText.setVisibility(View.GONE);
+                        radioGroup.setVisibility(View.GONE);
+                        signInButton.setVisibility(View.GONE);
+
+                        fragmentContainer.setVisibility(View.VISIBLE);
+
+
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.fragment_container, new DogWalkerDetailsFragment())
+                                .addToBackStack(null)
+                                .commit();
                     } else if (selectedRadioButton.getId() == R.id.radioTrainer) {
                         Toast.makeText(SignInActivity.this, "You selected: Dog Trainer / Veterinarian", Toast.LENGTH_SHORT).show();
                         Intent intent = new Intent(SignInActivity.this, DogTrainerActivity.class);

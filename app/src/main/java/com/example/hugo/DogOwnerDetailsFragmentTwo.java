@@ -1,7 +1,9 @@
 package com.example.hugo;
 
 import android.app.Activity;
+import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.icu.util.Calendar;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -11,7 +13,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
@@ -24,12 +25,8 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
-
 import android.content.Context;
 import android.widget.Toast;
-
-import com.example.hugo.bottomnavbar.Home.HomeFragment;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.shape.CornerFamily;
 
@@ -57,34 +54,25 @@ public class DogOwnerDetailsFragmentTwo extends Fragment {
             addDogQuestions(mainLayout, i, requireContext());
         }
 
-        // Set up the OnClickListener for the "Next" button
         nextButton.setOnClickListener(v -> {
-            // Load the nested fragment
-            FrameLayout nestedFragmentContainer = view.findViewById(R.id.nested_fragment_container);
-            if (nestedFragmentContainer != null) {
-                NestedFragment nestedFragment = new NestedFragment();
-                FragmentTransaction nestedTransaction = getChildFragmentManager().beginTransaction();
-                nestedTransaction.replace(R.id.nested_fragment_container, nestedFragment);
-                nestedTransaction.addToBackStack(null); // Optional: Add to back stack
-                nestedTransaction.commit();
+            if (areAllFieldsFilled(mainLayout)) {
+                Intent intent = new Intent(requireActivity(), MainActivity.class);
+                startActivity(intent);
+            } else {
+                Toast.makeText(requireContext(), "Please fill in all fields and upload a picture of your pet before proceeding!", Toast.LENGTH_SHORT).show();
             }
-
-            // Navigate to the HomeFragment
-            HomeFragment homeFragment = new HomeFragment();
-            FragmentTransaction homeTransaction = getParentFragmentManager().beginTransaction();
-            homeTransaction.replace(R.id.fragment_container, homeFragment);
-            homeTransaction.addToBackStack(null); // Optional: Add to back stack
-            homeTransaction.commit();
         });
 
         return view;
     }
+
     private final ActivityResultLauncher<Intent> imagePickerLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
                     Uri selectedImageUri = result.getData().getData();
                     if (selectedImageUri != null && selectedImageView != null) {
                         selectedImageView.setImageURI(selectedImageUri);
+                        selectedImageView.setTag("image_selected");
                     } else {
                         Toast.makeText(getContext(), "Failed to load image", Toast.LENGTH_SHORT).show();
                     }
@@ -100,10 +88,8 @@ public class DogOwnerDetailsFragmentTwo extends Fragment {
         title.setTypeface(ResourcesCompat.getFont(context, R.font.baloo2_semibold));
         parent.addView(title);
 
-
-
         ShapeableImageView dogImage = new ShapeableImageView(context);
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(300, 300);
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(200, 200);
         layoutParams.setMargins(10, 10, 10, 10);
         dogImage.setLayoutParams(layoutParams);
         dogImage.setImageResource(R.drawable.ic_add_photo);
@@ -112,10 +98,9 @@ public class DogOwnerDetailsFragmentTwo extends Fragment {
         dogImage.setShapeAppearanceModel(
                 dogImage.getShapeAppearanceModel()
                         .toBuilder()
-                        .setAllCorners(CornerFamily.ROUNDED, 150)
+                        .setAllCorners(CornerFamily.ROUNDED, 100)
                         .build()
         );
-
 
         dogImage.setOnClickListener(v -> {
             selectedImageView = dogImage;
@@ -127,38 +112,28 @@ public class DogOwnerDetailsFragmentTwo extends Fragment {
         addQuestionField(parent, "Breed:", context);
         RadioOption(parent, context, "Gender:", "Male", "Female");
         addQuestionField(parent, "Birthday (DD/MM/YYYY):", context);
-        SpecialNeedsOption(parent, context);
     }
 
-    private void addQuestionField(LinearLayout parent, String labelText, Context context) {
-        TextView label = new TextView(context);
-        label.setText(labelText);
-        label.setTextSize(16);
-        label.setPadding(10, 10, 10, 5);
-        label.setTypeface(ResourcesCompat.getFont(context, R.font.quicksand_medium)); // Set font if needed
-        label.setTextColor(ContextCompat.getColor(context, R.color.black));
+    private boolean areAllFieldsFilled(LinearLayout parent) {
+        for (int i = 0; i < parent.getChildCount(); i++) {
+            View child = parent.getChildAt(i);
 
-        EditText inputField = new EditText(context);
-        inputField.setLayoutParams(new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-        ));
-        inputField.setHint(labelText);
-        inputField.setTextSize(20);
-        inputField.setPadding(12, 12, 12, 12);
-        inputField.setTextColor(ContextCompat.getColor(context, R.color.black));
-        inputField.setHintTextColor(ContextCompat.getColor(context, R.color.milky));
-        inputField.setInputType(InputType.TYPE_CLASS_TEXT);
-        inputField.setBackground(ContextCompat.getDrawable(context, R.drawable.rounded_input));
+            if (child instanceof EditText) {
+                EditText editText = (EditText) child;
+                if (editText.getText().toString().trim().isEmpty()) {
+                    return false;
+                }
+            }
 
-        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) inputField.getLayoutParams();
-        params.setMargins(0, 0, 0, 12);
-        inputField.setLayoutParams(params);
-
-        parent.addView(label);
-        parent.addView(inputField);
+            if (child instanceof ShapeableImageView) {
+                ShapeableImageView imageView = (ShapeableImageView) child;
+                if (imageView.getTag() == null || !imageView.getTag().equals("image_selected")) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
-
 
     private String ordinal(int number) {
         if (number == 1) return "First";
@@ -166,8 +141,6 @@ public class DogOwnerDetailsFragmentTwo extends Fragment {
         if (number == 3) return "Third";
         return number + "th";
     }
-
-
 
     private void openImagePicker() {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
@@ -185,89 +158,87 @@ public class DogOwnerDetailsFragmentTwo extends Fragment {
         RadioGroup genderGroup = new RadioGroup(context);
         genderGroup.setOrientation(RadioGroup.HORIZONTAL);
 
-        RadioButton maleOption = new RadioButton(context);
-        maleOption.setText(option1);
-        maleOption.setId(View.generateViewId());
-        maleOption.setTypeface(ResourcesCompat.getFont(context, R.font.quicksand_medium));
-        maleOption.setTextColor(ContextCompat.getColor(context, R.color.black));
+        RadioButton option1Button = new RadioButton(context);
+        option1Button.setText(option1);
+        option1Button.setTextColor(ContextCompat.getColor(context, R.color.black));
 
-        RadioButton femaleOption = new RadioButton(context);
-        femaleOption.setText(option2);
-        femaleOption.setId(View.generateViewId());
-        femaleOption.setTypeface(ResourcesCompat.getFont(context, R.font.quicksand_medium));
-        femaleOption.setTextColor(ContextCompat.getColor(context, R.color.black));
+        RadioButton option2Button = new RadioButton(context);
+        option2Button.setText(option2);
+        option2Button.setTextColor(ContextCompat.getColor(context, R.color.black));
 
-
-        genderGroup.addView(maleOption);
-        genderGroup.addView(femaleOption);
+        genderGroup.addView(option1Button);
+        genderGroup.addView(option2Button);
 
         parent.addView(label);
         parent.addView(genderGroup);
     }
 
-    private void SpecialNeedsOption(LinearLayout parent, Context context) {
+
+    private void addQuestionField(LinearLayout parent, String labelText, Context context) {
         TextView label = new TextView(context);
-        label.setText("Special Needs:");
+        label.setText(labelText);
         label.setTextSize(16);
         label.setPadding(10, 10, 10, 5);
         label.setTypeface(ResourcesCompat.getFont(context, R.font.quicksand_medium));
         label.setTextColor(ContextCompat.getColor(context, R.color.black));
 
-        RadioGroup radioGroup = new RadioGroup(context);
-        radioGroup.setOrientation(RadioGroup.HORIZONTAL);
 
-        RadioButton noOption = new RadioButton(context);
-        noOption.setText("No");
-        noOption.setId(View.generateViewId());
-        noOption.setTypeface(ResourcesCompat.getFont(context, R.font.quicksand_medium));
-        noOption.setTextColor(ContextCompat.getColor(context, R.color.black));
+        if (labelText.equals("Birthday (DD/MM/YYYY):")) {
+            TextView birthdayField = new TextView(context);
+            birthdayField.setLayoutParams(new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+            ));
+            birthdayField.setHint("Select a date");
+            birthdayField.setTextSize(20);
+            birthdayField.setPadding(12, 12, 12, 12);
+            birthdayField.setTextColor(ContextCompat.getColor(context, R.color.black));
+            birthdayField.setHintTextColor(ContextCompat.getColor(context, R.color.milky));
+            birthdayField.setBackground(ContextCompat.getDrawable(context, R.drawable.rounded_input));
 
-        RadioButton yesOption = new RadioButton(context);
-        yesOption.setText("Yes");
-        yesOption.setId(View.generateViewId());
-        yesOption.setTypeface(ResourcesCompat.getFont(context, R.font.quicksand_medium));
-        yesOption.setTextColor(ContextCompat.getColor(context, R.color.black));
+            birthdayField.setOnClickListener(v -> showDatePicker(birthdayField));
 
-        radioGroup.addView(noOption);
-        radioGroup.addView(yesOption);
+            parent.addView(label);
+            parent.addView(birthdayField);
+        } else {
+            EditText inputField = new EditText(context);
+            inputField.setLayoutParams(new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+            ));
+            inputField.setHint(labelText);
+            inputField.setTextSize(20);
+            inputField.setPadding(12, 12, 12, 12);
+            inputField.setTextColor(ContextCompat.getColor(context, R.color.black));
+            inputField.setHintTextColor(ContextCompat.getColor(context, R.color.milky));
+            inputField.setInputType(InputType.TYPE_CLASS_TEXT);
+            inputField.setBackground(ContextCompat.getDrawable(context, R.drawable.rounded_input));
 
-        TextView specialNeedsLabel = new TextView(context);
-        specialNeedsLabel.setText("Please specify special needs:");
-        specialNeedsLabel.setTextSize(16);
-        specialNeedsLabel.setPadding(10, 5, 10, 5);
-        specialNeedsLabel.setTypeface(ResourcesCompat.getFont(context, R.font.quicksand_medium));
-        specialNeedsLabel.setTextColor(ContextCompat.getColor(context, R.color.black));
-        specialNeedsLabel.setVisibility(View.GONE);
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) inputField.getLayoutParams();
+            params.setMargins(0, 0, 0, 12);
+            inputField.setLayoutParams(params);
 
-        EditText specialNeedsInput = new EditText(context);
-        specialNeedsInput.setLayoutParams(new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-        ));
-        specialNeedsInput.setVisibility(View.GONE);
-        specialNeedsInput.setHint("Please specify special needs:");
-        specialNeedsInput.setTextSize(20);
-        specialNeedsInput.setPadding(12, 12, 12, 12);
-        specialNeedsInput.setTextColor(ContextCompat.getColor(context, R.color.black));
-        specialNeedsInput.setHintTextColor(ContextCompat.getColor(context, R.color.milky));
-        specialNeedsInput.setInputType(InputType.TYPE_CLASS_TEXT);
-        specialNeedsInput.setBackground(ContextCompat.getDrawable(context, R.drawable.rounded_input));
+            parent.addView(label);
+            parent.addView(inputField);
+        }
+    }
 
+    private void showDatePicker(TextView birthdayField) {
+        Calendar calendar = Calendar.getInstance();
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
 
-        radioGroup.setOnCheckedChangeListener((group, checkedId) -> {
-            if (checkedId == yesOption.getId()) {
-                specialNeedsLabel.setVisibility(View.VISIBLE);
-                specialNeedsInput.setVisibility(View.VISIBLE);
-            } else {
-                specialNeedsLabel.setVisibility(View.GONE);
-                specialNeedsInput.setVisibility(View.GONE);
-            }
-        });
+        DatePickerDialog datePickerDialog = new DatePickerDialog(
+                requireContext(),
+                (view, selectedYear, selectedMonth, selectedDay) -> {
+                    String formattedDate = String.format("%02d/%02d/%04d", selectedDay, selectedMonth + 1, selectedYear);
+                    birthdayField.setText(formattedDate);
+                },
+                year, month, day
+        );
 
-        parent.addView(label);
-        parent.addView(radioGroup);
-        parent.addView(specialNeedsLabel);
-        parent.addView(specialNeedsInput);
+        datePickerDialog.show();
     }
 
 

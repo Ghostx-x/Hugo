@@ -1,0 +1,191 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/titleText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Dog Walker Registration"
+            android:textColor="@color/black"
+            android:fontFamily="@font/baloo2_semibold"
+            android:layout_centerHorizontal="true"
+            android:textSize="24sp"
+            android:layout_marginBottom="16dp"
+            android:layout_marginTop="15dp"
+            android:layout_alignParentTop="true"/>
+
+        <TextView
+            android:id="@+id/profilePhotoText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Profile Photo"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            android:fontFamily="@font/quicksand_medium"
+            android:layout_marginBottom="16dp"
+            android:layout_below="@id/titleText"/>
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/profilePhotoImageView"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_below="@id/profilePhotoText"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="20dp"
+            android:src="@drawable/ic_profile"
+            app:shapeAppearanceOverlay="@style/CircularShape" />
+
+
+        <TextView
+            android:id="@+id/experienceText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Years of Experience Walking Dogs"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            android:fontFamily="@font/quicksand_medium"
+            android:layout_marginBottom="16dp"
+            android:layout_below="@id/profilePhotoImageView"/>
+
+        <RadioGroup
+            android:id="@+id/experience"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_below="@id/experienceText">
+            <RadioButton
+                android:id="@+id/junior"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/quicksand_medium"
+                android:textColor="@color/black"
+                android:text="0-1 years" />
+            <RadioButton
+                android:id="@+id/medium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/quicksand_medium"
+                android:textColor="@color/black"
+                android:text="1-3 years" />
+            <RadioButton
+                android:id="@+id/pro"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/quicksand_medium"
+                android:textColor="@color/black"
+                android:text="3+ years" />
+        </RadioGroup>
+
+        <TextView
+            android:id="@+id/dogSizesText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Dog Sizes You're Comfortable Walking:"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            android:fontFamily="@font/quicksand_medium"
+            android:layout_marginBottom="16dp"
+            android:layout_marginTop="20dp"
+            android:layout_below="@id/experience"/>
+
+        <RadioGroup
+            android:id="@+id/dogSizeGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_below="@id/dogSizesText">
+            <RadioButton
+                android:id="@+id/smallDog"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/quicksand_medium"
+                android:textColor="@color/black"
+                android:text="Small (0-10 kg)" />
+            <RadioButton
+                android:id="@+id/mediumDog"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/quicksand_medium"
+                android:textColor="@color/black"
+                android:text="Medium (10-25 kg)" />
+            <RadioButton
+                android:id="@+id/largeDog"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/quicksand_medium"
+                android:textColor="@color/black"
+                android:text="Large (25+ kg)" />
+        </RadioGroup>
+
+        <TextView
+            android:id="@+id/maxDogsText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Maximum Dogs You Can Walk at Once?"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            android:fontFamily="@font/quicksand_medium"
+            android:layout_marginBottom="16dp"
+            android:layout_marginTop="20dp"
+            android:layout_below="@id/dogSizeGroup"/>
+
+        <RadioGroup
+            android:id="@+id/maxDogsGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_below="@id/maxDogsText">
+            <RadioButton
+                android:id="@+id/oneDog"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/quicksand_medium"
+                android:textColor="@color/black"
+                android:text="1" />
+            <RadioButton
+                android:id="@+id/twoDogs"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/quicksand_medium"
+                android:textColor="@color/black"
+                android:text="2" />
+            <RadioButton
+                android:id="@+id/threeDogs"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/quicksand_medium"
+                android:textColor="@color/black"
+                android:text="3" />
+            <RadioButton
+                android:id="@+id/fourPlusDogs"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/quicksand_medium"
+                android:textColor="@color/black"
+                android:text="4+" />
+        </RadioGroup>
+
+        <Button
+            android:id="@+id/btn_next"
+            android:layout_width="300dp"
+            android:layout_height="60dp"
+            android:layout_below="@+id/maxDogsGroup"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="40dp"
+            android:background="@drawable/btn_darkblue"
+            android:fontFamily="@font/quicksand_bold"
+            android:padding="-30dp"
+            android:text="Next"
+            android:textColor="@color/milky"
+            android:textSize="24sp"
+            app:backgroundTint="@null" />
+
+    </RelativeLayout>
+</ScrollView>
