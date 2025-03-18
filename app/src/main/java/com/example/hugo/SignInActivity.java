@@ -65,8 +65,17 @@ public class SignInActivity extends AppCompatActivity {
                                 .commit();
                     } else if (selectedRadioButton.getId() == R.id.radioTrainer) {
                         Toast.makeText(SignInActivity.this, "You selected: Dog Trainer / Veterinarian", Toast.LENGTH_SHORT).show();
-                        Intent intent = new Intent(SignInActivity.this, DogTrainerActivity.class);
-                        startActivity(intent);
+                        questionText.setVisibility(View.GONE);
+                        radioGroup.setVisibility(View.GONE);
+                        signInButton.setVisibility(View.GONE);
+
+                        fragmentContainer.setVisibility(View.VISIBLE);
+
+
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.fragment_container, new TrainerDetailsFragment())
+                                .addToBackStack(null)
+                                .commit();
                     }
                 } else {
                     Toast.makeText(SignInActivity.this, "Please select an option", Toast.LENGTH_SHORT).show();

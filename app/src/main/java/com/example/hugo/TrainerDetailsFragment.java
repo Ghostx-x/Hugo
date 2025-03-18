@@ -19,7 +19,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.hugo.R;
 
-public class DogWalkerDetailsFragment extends Fragment {
+public class TrainerDetailsFragment extends Fragment {
 
     private RadioGroup dogSizeGroup;
     private RadioGroup maxDogsGroup;
@@ -33,7 +33,7 @@ public class DogWalkerDetailsFragment extends Fragment {
 
     private static final int PICK_IMAGE_REQUEST = 1;
 
-    public DogWalkerDetailsFragment() {}
+    public TrainerDetailsFragment() {}
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,

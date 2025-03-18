@@ -8,6 +8,7 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:padding="16dp">
 
+
         <TextView
             android:id="@+id/titleText"
             android:layout_width="wrap_content"
@@ -34,14 +35,16 @@
 
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/profilePhotoImageView"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
+            android:layout_width="75dp"
+            android:layout_height="75dp"
             android:layout_below="@id/profilePhotoText"
             android:layout_marginTop="5dp"
             android:layout_marginBottom="20dp"
             android:src="@drawable/ic_profile"
+            android:scaleType="centerCrop"
+            app:strokeWidth="0dp"
+            app:strokeColor="@color/black"
             app:shapeAppearanceOverlay="@style/CircularShape" />
-
 
         <TextView
             android:id="@+id/experienceText"
