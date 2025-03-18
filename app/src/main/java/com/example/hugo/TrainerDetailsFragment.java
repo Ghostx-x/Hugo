@@ -8,6 +8,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -17,61 +19,60 @@ import android.widget.Toast;
 import androidx.activity.OnBackPressedCallback;
 import androidx.fragment.app.Fragment;
 
-import com.example.hugo.R;
-
 public class TrainerDetailsFragment extends Fragment {
 
-    private RadioGroup dogSizeGroup;
-    private RadioGroup maxDogsGroup;
-    private TextView profilePhotoText;
-    private TextView experienceText;
-    private TextView dogSizesText;
-    private TextView maxDogsText;
-    private TextView titleText;
-    private ImageView profilePhotoImageView;
-    private Button nextButton;
-
     private static final int PICK_IMAGE_REQUEST = 1;
+    private static final int PICK_CERTIFICATION_REQUEST = 2;
+
+    private ImageView profilePhotoImageView;
+    private TextView certificationTextView;
+    private CheckBox basicObedience, behavioralCorrection, puppyTraining, agilityTraining;
+    private EditText sessionDurationPricing;
+    private RadioGroup inHomeTrainingGroup;
+    private Button nextButton;
 
     public TrainerDetailsFragment() {}
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_trainer_details, container, false);
 
-        View view = inflater.inflate(R.layout.fragment_dog_walker_details, container, false);
-
-        dogSizeGroup = view.findViewById(R.id.dogSizeGroup);
-        maxDogsGroup = view.findViewById(R.id.maxDogsGroup);
-        profilePhotoText = view.findViewById(R.id.profilePhotoText);
-        experienceText = view.findViewById(R.id.experienceText);
-        dogSizesText = view.findViewById(R.id.dogSizesText);
-        maxDogsText = view.findViewById(R.id.maxDogsText);
-        titleText = view.findViewById(R.id.titleText);
         profilePhotoImageView = view.findViewById(R.id.profilePhotoImageView);
+        certificationTextView = view.findViewById(R.id.certificationTextView);
+        basicObedience = view.findViewById(R.id.checkBoxBasicObedience);
+        behavioralCorrection = view.findViewById(R.id.checkBoxBehavioralCorrection);
+        puppyTraining = view.findViewById(R.id.checkBoxPuppyTraining);
+        agilityTraining = view.findViewById(R.id.checkBoxAgilityTraining);
+        sessionDurationPricing = view.findViewById(R.id.sessionDurationPricing);
+        inHomeTrainingGroup = view.findViewById(R.id.inHomeTrainingGroup);
         nextButton = view.findViewById(R.id.btn_next);
 
-        profilePhotoImageView.setOnClickListener(v -> openGalleryForImage());
+        profilePhotoImageView.setOnClickListener(v -> openGallery(PICK_IMAGE_REQUEST));
+        certificationTextView.setOnClickListener(v -> openGallery(PICK_CERTIFICATION_REQUEST));
 
         nextButton.setOnClickListener(v -> onNextButtonClick());
 
         return view;
     }
 
-    private void openGalleryForImage() {
+    private void openGallery(int requestCode) {
         Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType("image/*");
-        startActivityForResult(intent, PICK_IMAGE_REQUEST);
+        startActivityForResult(intent, requestCode);
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data != null) {
-            Uri selectedImageUri = data.getData();
-            if (selectedImageUri != null) {
-                profilePhotoImageView.setImageURI(selectedImageUri);
+        if (resultCode == Activity.RESULT_OK && data != null) {
+            Uri selectedUri = data.getData();
+            if (selectedUri != null) {
+                if (requestCode == PICK_IMAGE_REQUEST) {
+                    profilePhotoImageView.setImageURI(selectedUri);
+                } else if (requestCode == PICK_CERTIFICATION_REQUEST) {
+                    certificationTextView.setText("Certification uploaded");
+                }
             }
         }
     }
@@ -86,25 +87,11 @@ public class TrainerDetailsFragment extends Fragment {
     }
 
     private boolean isAllInputsValid() {
-        if (profilePhotoImageView.getDrawable() == null) {
-            return false;
-        }
-
-        int selectedExperienceId = experienceText.getId();
-        if (selectedExperienceId == -1) {
-            return false;
-        }
-
-        int selectedDogSizeId = dogSizeGroup.getCheckedRadioButtonId();
-        if (selectedDogSizeId == -1) {
-            return false;
-        }
-
-        int selectedMaxDogsId = maxDogsGroup.getCheckedRadioButtonId();
-        if (selectedMaxDogsId == -1) {
-            return false;
-        }
-
+        if (profilePhotoImageView.getDrawable() == null) return false;
+        if (certificationTextView.getText().toString().isEmpty()) return false;
+        if (!basicObedience.isChecked() && !behavioralCorrection.isChecked() && !puppyTraining.isChecked() && !agilityTraining.isChecked()) return false;
+        if (sessionDurationPricing.getText().toString().isEmpty()) return false;
+        if (inHomeTrainingGroup.getCheckedRadioButtonId() == -1) return false;
         return true;
     }
 
@@ -120,6 +107,4 @@ public class TrainerDetailsFragment extends Fragment {
             }
         });
     }
-
-
 }
