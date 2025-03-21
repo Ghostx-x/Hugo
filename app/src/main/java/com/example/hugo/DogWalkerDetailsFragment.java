@@ -51,17 +51,19 @@ public class DogWalkerDetailsFragment extends Fragment {
         profilePhotoImageView = view.findViewById(R.id.profilePhotoImageView);
         nextButton = view.findViewById(R.id.btn_next);
 
-        profilePhotoImageView.setOnClickListener(v -> openGalleryForImage());
+        profilePhotoImageView.setOnClickListener(v -> openGalleryForImage(PICK_IMAGE_REQUEST));
 
         nextButton.setOnClickListener(v -> onNextButtonClick());
 
         return view;
     }
 
-    private void openGalleryForImage() {
-        Intent intent = new Intent(Intent.ACTION_PICK);
-        intent.setType("image/*");
-        startActivityForResult(intent, PICK_IMAGE_REQUEST);
+    private void openGalleryForImage(int requestCode) {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("*/*");
+        String[] mimeTypes = {"image/*", "application/pdf"};
+        intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
+        startActivityForResult(intent, requestCode);
     }
 
     @Override

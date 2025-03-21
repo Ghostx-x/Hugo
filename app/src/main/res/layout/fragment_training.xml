@@ -58,13 +58,24 @@
             android:layout_below="@id/profilePhotoImageView"
             android:layout_marginBottom="16dp" />
 
+        <Button
+            android:id="@+id/uploadCertificateButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Upload File"
+            android:textColor="@color/black"
+            android:backgroundTint="@color/gray"
+            android:layout_below="@id/certificationTextView"
+            android:layout_marginBottom="16dp"/>
+
+
         <EditText
             android:id="@+id/sessionDurationPricing"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Session Duration and Pricing"
             android:inputType="text"
-            android:layout_below="@id/certificationTextView"
+            android:layout_below="@id/uploadCertificateButton"
             android:layout_marginBottom="16dp" />
 
 
