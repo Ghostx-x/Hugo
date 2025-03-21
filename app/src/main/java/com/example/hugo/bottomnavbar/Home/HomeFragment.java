@@ -7,15 +7,27 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
+
 import androidx.cardview.widget.CardView;
 import com.example.hugo.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
 public class HomeFragment extends Fragment {
 
+    private TextView welcomeText;
+    private FirebaseAuth mAuth;
+    private DatabaseReference databaseRef;
     private BottomNavigationView bottomNavigationView;
 
     @Nullable
@@ -31,6 +43,8 @@ public class HomeFragment extends Fragment {
         CardView cardView2 = view.findViewById(R.id.card_behavior_training);
         CardView cardView3 = view.findViewById(R.id.card_health_aid);
 
+        mAuth = FirebaseAuth.getInstance();
+        databaseRef = FirebaseDatabase.getInstance().getReference("Users");
 
 
         cardView1.setOnClickListener(new View.OnClickListener() {
@@ -59,6 +73,9 @@ public class HomeFragment extends Fragment {
             ));
             openStoryFragment(healthImages);
         });
+        welcomeText = view.findViewById(R.id.welcomeText);
+        loadUserName();
+
 
         return view;
     }
@@ -77,6 +94,30 @@ public class HomeFragment extends Fragment {
 
         }
     }
+
+    private void loadUserName() {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user != null) {
+            String userId = user.getUid();
+            databaseRef.child(userId).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.exists()) {
+                        String userName = snapshot.getValue(String.class);
+                        welcomeText.setText("Welcome back, " + userName);
+                    } else {
+                        welcomeText.setText("Welcome back, User");
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    welcomeText.setText("Welcome back, User");
+                }
+            });
+        }
+    }
+
 
     @Override
     public void onPause() {

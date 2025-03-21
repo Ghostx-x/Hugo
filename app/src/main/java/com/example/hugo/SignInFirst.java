@@ -21,7 +21,7 @@ public class SignInFirst extends AppCompatActivity {
     private Button registerButton;
     private FirebaseAuth mAuth;
     private DatabaseReference databaseRef;
-    private boolean isRegistered = false; // Track if user is registered
+    private boolean isRegistered = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +75,7 @@ public class SignInFirst extends AppCompatActivity {
                         if (user != null) {
                             sendEmailVerification(user);
                             storeUserData(user.getUid(), new User(name, email));
-                            isRegistered = true; // Mark user as registered
+                            isRegistered = true;
                         }
                     } else {
                         Toast.makeText(SignInFirst.this, "Authentication Failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
@@ -87,7 +87,7 @@ public class SignInFirst extends AppCompatActivity {
         user.sendEmailVerification().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 Toast.makeText(SignInFirst.this, "Verification email sent! Please check your inbox.", Toast.LENGTH_SHORT).show();
-                mAuth.signOut(); // Log out so they have to log in again after verification
+                mAuth.signOut();
             } else {
                 Toast.makeText(SignInFirst.this, "Failed to send verification email", Toast.LENGTH_SHORT).show();
             }
