@@ -14,6 +14,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -21,6 +23,13 @@ import androidx.fragment.app.Fragment;
 import com.example.hugo.R;
 import com.example.hugo.bottomnavbar.EditProfileDialog;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.io.IOException;
 
@@ -34,20 +43,26 @@ public class ProfileFragment extends Fragment {
     private Uri selectedImageUri;
     private BottomNavigationView bottomNavigationView;
 
+    // Firebase
+    private FirebaseAuth mAuth;
+    private DatabaseReference databaseRef;
+
     public ProfileFragment() {
         // Required empty public constructor
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_profile, container, false);  // Use the correct layout
+        View view = inflater.inflate(R.layout.fragment_profile, container, false);
         return view;
     }
-
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        mAuth = FirebaseAuth.getInstance();
+        databaseRef = FirebaseDatabase.getInstance().getReference("Users");
+
         bottomNavigationView = getActivity().findViewById(R.id.bottom_navigation);
         bottomNavigationView.setVisibility(View.VISIBLE);
 
@@ -60,10 +75,10 @@ public class ProfileFragment extends Fragment {
         sharedPreferences = requireActivity().getSharedPreferences("UserProfile", Context.MODE_PRIVATE);
         loadUserProfile();
 
-        // Open Edit Profile Dialog
-        editProfileButton.setOnClickListener(v -> openEditProfileDialog());
 
-        // Select Profile Image
+        loadUserName();
+
+        editProfileButton.setOnClickListener(v -> openEditProfileDialog());
         profileImage.setOnClickListener(v -> selectProfileImage());
     }
 
@@ -113,5 +128,28 @@ public class ProfileFragment extends Fragment {
         usernameText.setText(sharedPreferences.getString("username", "Username"));
         bioText.setText(sharedPreferences.getString("bio", "Bio goes here..."));
         locationText.setText(sharedPreferences.getString("location", "Location"));
+    }
+
+    private void loadUserName() {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user != null) {
+            String userId = user.getUid();
+            databaseRef.child(userId).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.exists()) {
+                        String userName = snapshot.getValue(String.class);
+                        usernameText.setText(userName);
+                    } else {
+                        usernameText.setText("Username");
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Toast.makeText(requireContext(), "Failed to load username", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
 }

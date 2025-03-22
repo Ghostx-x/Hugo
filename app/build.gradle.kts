@@ -37,6 +37,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
+    implementation(libs.play.services.location)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
@@ -45,6 +46,8 @@ dependencies {
     implementation("com.google.firebase:firebase-auth:21.1.0")
     implementation("com.google.firebase:firebase-database:20.2.1")
     implementation ("com.google.firebase:firebase-firestore:24.9.1")
+
+    implementation ("com.google.android.gms:play-services-maps:17.0.1")
 
 
     implementation("androidx.viewpager2:viewpager2:1.0.0")

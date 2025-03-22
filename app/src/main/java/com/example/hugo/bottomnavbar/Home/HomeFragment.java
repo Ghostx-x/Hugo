@@ -11,7 +11,9 @@ import android.widget.TextView;
 
 import androidx.cardview.widget.CardView;
 import com.example.hugo.R;
+import com.example.hugo.bottomnavbar.ProfileFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.imageview.ShapeableImageView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -37,6 +39,11 @@ public class HomeFragment extends Fragment {
 
         bottomNavigationView = getActivity().findViewById(R.id.bottom_navigation);
         bottomNavigationView.setVisibility(View.VISIBLE);
+
+        ShapeableImageView profileButton = view.findViewById(R.id.profileButton);
+        profileButton.setOnClickListener(v -> {
+            navigateToProfileFragment();
+        });
 
 
         CardView cardView1 = view.findViewById(R.id.card_best_foods);
@@ -93,6 +100,15 @@ public class HomeFragment extends Fragment {
         } else {
 
         }
+    }
+
+    private void navigateToProfileFragment() {
+        getParentFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, new ProfileFragment())
+                .addToBackStack(null)
+                .commit();
+        BottomNavigationView bottomNavigationView = getActivity().findViewById(R.id.bottom_navigation);
+        bottomNavigationView.setSelectedItemId(R.id.nav_profile);
     }
 
     private void loadUserName() {

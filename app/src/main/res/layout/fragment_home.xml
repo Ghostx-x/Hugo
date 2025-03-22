@@ -20,11 +20,13 @@
 
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/profileButton"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
                 android:background="@color/darkblue"
-                android:padding="12dp"
+                android:padding="5dp"
                 android:scaleType="centerInside"
+                android:clickable="true"
+                android:focusable="true"
                 android:src="@drawable/profile"
                 app:shapeAppearanceOverlay="@style/CircularShape"/>
 
@@ -43,21 +45,21 @@
 
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/chatButton"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
                 android:layout_marginStart="8dp"
                 android:background="@color/darkblue"
-                android:padding="8dp"
+                android:scaleType="centerInside"
                 android:src="@drawable/chat"
                 app:shapeAppearanceOverlay="@style/CircularShape"/>
 
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/alertsButton"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
                 android:layout_marginStart="8dp"
                 android:background="@color/darkblue"
-                android:padding="8dp"
+                android:scaleType="centerInside"
                 android:src="@drawable/alert"
                 app:shapeAppearanceOverlay="@style/CircularShape"/>
         </LinearLayout>
@@ -75,6 +77,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Search"
+                android:searchResultHighlightColor="@color/black"
+                android:outlineSpotShadowColor="@color/black"
                 android:textColor="@color/black"/>
         </com.google.android.material.textfield.TextInputLayout>
 

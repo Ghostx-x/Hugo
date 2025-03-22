@@ -10,7 +10,7 @@ import androidx.fragment.app.Fragment;
 import com.example.hugo.bottomnavbar.Home.HomeFragment;
 import com.example.hugo.bottomnavbar.Home.StoryFragment;
 import com.example.hugo.bottomnavbar.SearchFragment;
-import com.example.hugo.bottomnavbar.TrainingFragment;
+import com.example.hugo.bottomnavbar.LocationFragment;
 import com.example.hugo.bottomnavbar.ProfileFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -40,8 +40,8 @@ public class MainActivity extends AppCompatActivity {
                 selectedFragment = new HomeFragment();
             } else if (itemId == R.id.nav_search) {
                 selectedFragment = new SearchFragment();
-            } else if (itemId == R.id.nav_training) {
-                selectedFragment = new TrainingFragment();
+            } else if (itemId == R.id.nav_location) {
+                selectedFragment = new LocationFragment();
             } else if (itemId == R.id.nav_profile) {
                 selectedFragment = new ProfileFragment();
             } else {

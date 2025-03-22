@@ -11,9 +11,9 @@
         android:icon="@drawable/search"
         android:title="Search"/>
     <item
-        android:id="@+id/nav_training"
+        android:id="@+id/nav_location"
         android:icon="@drawable/training"
-        android:title="Training"/>
+        android:title="Location"/>
     <item
 
         android:id="@+id/nav_profile"
