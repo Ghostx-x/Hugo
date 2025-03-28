@@ -115,7 +115,7 @@ public class HomeFragment extends Fragment {
         FirebaseUser user = mAuth.getCurrentUser();
         if (user != null) {
             String userId = user.getUid();
-            databaseRef.child(userId).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
+            databaseRef.child(userId).child("name").addValueEventListener(new ValueEventListener() {  // Use addValueEventListener
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     if (snapshot.exists()) {
