@@ -8,6 +8,13 @@
     <string name="login_title">Welcome Back to Hugo!</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
+    <string-array name="user_roles">
+        <item>All</item>
+        <item>Dog Owner</item>
+        <item>Dog Walker</item>
+        <item>Trainer/Veterinarian</item>
+    </string-array>
+
     <string name="google_maps_key">AIzaSyDNUkP1cEXceDhg9w-7QOxT-2MwdogwdpI</string>
 
 </resources>

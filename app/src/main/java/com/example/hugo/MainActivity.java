@@ -9,9 +9,9 @@ import androidx.fragment.app.Fragment;
 
 import com.example.hugo.bottomnavbar.Home.HomeFragment;
 import com.example.hugo.bottomnavbar.Home.StoryFragment;
-import com.example.hugo.bottomnavbar.SearchFragment;
+import com.example.hugo.bottomnavbar.Search.SearchFragment;
 import com.example.hugo.bottomnavbar.LocationFragment;
-import com.example.hugo.bottomnavbar.ProfileFragment;
+import com.example.hugo.bottomnavbar.Profile.ProfileFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;

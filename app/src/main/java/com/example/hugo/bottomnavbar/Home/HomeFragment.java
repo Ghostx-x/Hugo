@@ -11,7 +11,7 @@ import android.widget.TextView;
 
 import androidx.cardview.widget.CardView;
 import com.example.hugo.R;
-import com.example.hugo.bottomnavbar.ProfileFragment;
+import com.example.hugo.bottomnavbar.Profile.ProfileFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -115,7 +115,7 @@ public class HomeFragment extends Fragment {
         FirebaseUser user = mAuth.getCurrentUser();
         if (user != null) {
             String userId = user.getUid();
-            databaseRef.child(userId).child("name").addValueEventListener(new ValueEventListener() {  // Use addValueEventListener
+            databaseRef.child(userId).child("name").addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     if (snapshot.exists()) {
@@ -133,6 +133,7 @@ public class HomeFragment extends Fragment {
             });
         }
     }
+
 
 
     @Override

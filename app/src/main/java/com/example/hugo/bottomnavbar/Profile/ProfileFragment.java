@@ -1,4 +1,4 @@
-package com.example.hugo.bottomnavbar;
+package com.example.hugo.bottomnavbar.Profile;
 
 import android.app.Activity;
 import android.content.Context;
@@ -16,13 +16,19 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.util.Base64;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.bumptech.glide.Glide;
 import com.example.hugo.R;
-import com.example.hugo.bottomnavbar.EditProfileDialog;
+import com.example.hugo.bottomnavbar.Home.HomeFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -49,8 +55,6 @@ public class ProfileFragment extends Fragment {
     // Firebase
     private FirebaseAuth mAuth;
     private DatabaseReference databaseRef;
-    private FirebaseStorage storage;
-    private StorageReference storageRef;
 
     public ProfileFragment() {
         // Required empty public constructor
@@ -67,8 +71,6 @@ public class ProfileFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         mAuth = FirebaseAuth.getInstance();
         databaseRef = FirebaseDatabase.getInstance().getReference("Users");
-        storage = FirebaseStorage.getInstance();
-        storageRef = storage.getReference();
 
         bottomNavigationView = getActivity().findViewById(R.id.bottom_navigation);
         bottomNavigationView.setVisibility(View.VISIBLE);
@@ -81,6 +83,9 @@ public class ProfileFragment extends Fragment {
 
         sharedPreferences = requireActivity().getSharedPreferences("UserProfile", Context.MODE_PRIVATE);
         loadUserProfile();
+
+
+        loadUserName();
 
         editProfileButton.setOnClickListener(v -> openEditProfileDialog());
         profileImage.setOnClickListener(v -> selectProfileImage());
@@ -95,7 +100,7 @@ public class ProfileFragment extends Fragment {
                     usernameText.setText(newUsername);
                     bioText.setText(newBio);
                     locationText.setText(newLocation);
-                    saveUserProfile(newUsername, newBio, newLocation, null); // Save new data, leave profileImageUrl as null
+                    saveUserProfile(newUsername, newBio, newLocation);
                 });
 
         dialog.show();
@@ -115,72 +120,109 @@ public class ProfileFragment extends Fragment {
                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(requireActivity().getContentResolver(), selectedImageUri);
                 profileImage.setImageBitmap(bitmap);
 
-                // Upload image to Firebase Storage
-                uploadProfileImage();
+                uploadProfileImageToFirebase(selectedImageUri);  // Upload image to Firebase
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    private void uploadProfileImage() {
-        if (selectedImageUri != null) {
-            StorageReference fileReference = storageRef.child("profile_images/" + mAuth.getCurrentUser().getUid() + ".jpg");
-            fileReference.putFile(selectedImageUri)
-                    .addOnSuccessListener(taskSnapshot -> fileReference.getDownloadUrl().addOnSuccessListener(uri -> {
-                        String profileImageUrl = uri.toString();
-                        saveUserProfile(usernameText.getText().toString(), bioText.getText().toString(), locationText.getText().toString(), profileImageUrl);
-                    }))
-                    .addOnFailureListener(e -> Toast.makeText(requireContext(), "Failed to upload image", Toast.LENGTH_SHORT).show());
+    private void uploadProfileImageToFirebase(Uri imageUri) {
+        try {
+            Bitmap bitmap = MediaStore.Images.Media.getBitmap(requireActivity().getContentResolver(), imageUri);
+            String base64Image = encodeImageToBase64(bitmap);
+            saveBase64ImageToFirestore(base64Image);
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(getContext(), "Failed to encode image", Toast.LENGTH_SHORT).show();
         }
     }
 
-    private void saveUserProfile(String username, String bio, String location, String profileImageUrl) {
+    private String encodeImageToBase64(Bitmap bitmap) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+        byte[] byteArray = byteArrayOutputStream.toByteArray();
+        return Base64.encodeToString(byteArray, Base64.DEFAULT);
+    }
+
+    private void saveBase64ImageToFirestore(String base64Image) {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user != null) {
+            DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(user.getUid());
+            userRef.child("profileImageBase64").setValue(base64Image)
+                    .addOnSuccessListener(aVoid -> {
+                        Toast.makeText(getContext(), "Profile image updated", Toast.LENGTH_SHORT).show();
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(getContext(), "Failed to save image", Toast.LENGTH_SHORT).show();
+                    });
+        }
+    }
+
+
+
+
+    private void saveProfileImageUrl(String imageUrl) {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user != null) {
+            DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(user.getUid());
+            userRef.child("profileImageUrl").setValue(imageUrl)
+                    .addOnSuccessListener(aVoid -> {
+                        // You can also update the UI with the new image URL if needed
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(getContext(), "Failed to save profile image URL", Toast.LENGTH_SHORT).show();
+                    });
+        }
+    }
+
+
+    private void saveUserProfile(String username, String bio, String location) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("username", username);
         editor.putString("bio", bio);
         editor.putString("location", location);
-        if (profileImageUrl != null) {
-            editor.putString("profileImageUrl", profileImageUrl);
-        }
         editor.apply();
-
-        FirebaseUser user = mAuth.getCurrentUser();
-        if (user != null) {
-            String userId = user.getUid();
-            databaseRef.child(userId).child("name").setValue(username);
-            databaseRef.child(userId).child("bio").setValue(bio);
-            databaseRef.child(userId).child("location").setValue(location);
-            if (profileImageUrl != null) {
-                databaseRef.child(userId).child("profileImageUrl").setValue(profileImageUrl);
-            }
-        }
     }
 
     private void loadUserProfile() {
         usernameText.setText(sharedPreferences.getString("username", "Username"));
         bioText.setText(sharedPreferences.getString("bio", "Bio goes here..."));
         locationText.setText(sharedPreferences.getString("location", "Location"));
-        String profileImageUrl = sharedPreferences.getString("profileImageUrl", "");
-        if (!profileImageUrl.isEmpty()) {
-            Glide.with(requireContext()).load(profileImageUrl).into(profileImage);
+
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user != null) {
+            DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(user.getUid());
+            userRef.child("profileImageBase64").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.exists()) {
+                        String base64Image = snapshot.getValue(String.class);
+                        byte[] decodedBytes = Base64.decode(base64Image, Base64.DEFAULT);
+                        Bitmap decodedBitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+                        profileImage.setImageBitmap(decodedBitmap);
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Toast.makeText(getContext(), "Failed to load profile image", Toast.LENGTH_SHORT).show();
+                }
+            });
         }
+
     }
 
     private void loadUserName() {
         FirebaseUser user = mAuth.getCurrentUser();
         if (user != null) {
             String userId = user.getUid();
-            databaseRef.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
+            databaseRef.child(userId).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     if (snapshot.exists()) {
-                        String userName = snapshot.child("name").getValue(String.class);
-                        String bio = snapshot.child("bio").getValue(String.class);
-                        String location = snapshot.child("location").getValue(String.class);
+                        String userName = snapshot.getValue(String.class);
                         usernameText.setText(userName);
-                        bioText.setText(bio);
-                        locationText.setText(location);
                     } else {
                         usernameText.setText("Username");
                     }
