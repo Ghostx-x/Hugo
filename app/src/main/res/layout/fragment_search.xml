@@ -1,0 +1,42 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:background="@color/milky">
+
+    <EditText
+        android:id="@+id/search_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Search users..."
+        android:textColor="@color/black"
+        android:drawableStart="@android:drawable/ic_menu_search"
+        android:padding="12dp" />
+    <TextView
+        android:id="@+id/no_results_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="No users found."
+        android:gravity="center"
+        android:visibility="gone"
+        android:textSize="16sp"
+        android:textColor="@android:color/darker_gray"
+        android:layout_marginTop="20dp"/>
+
+
+    <Spinner
+        android:id="@+id/role_filter"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:outlineSpotShadowColor="@color/black"
+        android:outlineAmbientShadowColor="@color/black"
+        android:layout_marginTop="8dp"
+        android:entries="@array/user_roles" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/user_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="8dp"/>
+</LinearLayout>

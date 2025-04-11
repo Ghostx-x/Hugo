@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/milky">
+
+    <ImageView
+        android:id="@+id/mascot"
+        android:layout_width="208dp"
+        android:layout_height="237dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.499"
+        app:srcCompat="@drawable/mascot" />
+
+    <TextView
+        android:id="@+id/welcome_title"
+        android:layout_width="345dp"
+        android:layout_height="58dp"
+        android:fontFamily="@font/baloo2_bold"
+        android:text="@string/welcome_title"
+        android:textSize="36sp"
+        android:textColor="@color/black"
+        app:layout_constraintBottom_toTopOf="@+id/mascot"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.367" />
+
+    <TextView
+        android:id="@+id/welcome_subtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:fontFamily="@font/quicksand_medium"
+        android:text="@string/welcome_subtitle"
+        android:textSize="15sp"
+        android:textColor="@color/black"
+        app:layout_constraintBottom_toTopOf="@+id/mascot"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/welcome_title"
+        app:layout_constraintVertical_bias="0.103" />
+
+    <Button
+        android:id="@+id/btn_signIn"
+        android:layout_width="300dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="60dp"
+        app:backgroundTint="@null"
+        android:background="@drawable/btn_darkblue"
+        android:text="@string/btn_signIn"
+        android:textSize="24sp"
+        android:fontFamily="@font/quicksand_bold"
+        android:textColor="@color/milky"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/mascot" />
+
+    <Button
+        android:id="@+id/btn_login"
+        android:layout_width="300dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="30dp"
+        app:backgroundTint="@null"
+        android:background="@drawable/btn_lightblue"
+        android:text="@string/btn_login"
+        android:textSize="24sp"
+        android:fontFamily="@font/quicksand_bold"
+        android:textColor="@color/milky"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btn_signIn" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

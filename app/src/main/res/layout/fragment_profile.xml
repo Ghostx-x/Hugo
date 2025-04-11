@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/milky"
+    android:padding="20dp">
+
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/profile_image"
+        android:layout_width="75dp"
+        android:layout_height="75dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="20dp"
+        android:src="@drawable/ic_profile"
+        android:layout_centerHorizontal="true"
+        android:scaleType="centerCrop"
+        app:strokeWidth="0dp"
+        app:strokeColor="@color/black"
+        app:shapeAppearanceOverlay="@style/CircularShape" />
+
+
+    <TextView
+        android:id="@+id/username_text"
+        android:layout_below="@id/profile_image"
+        android:layout_marginTop="5dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Username"
+        android:textSize="20sp"
+        android:textColor="@color/black"
+        android:fontFamily="@font/baloo2_semibold"
+        android:textStyle="bold"
+        android:layout_centerHorizontal="true" />
+
+
+    <TextView
+        android:id="@+id/bio_text"
+        android:layout_below="@id/username_text"
+        android:layout_marginTop="15dp"
+        android:textColor="@color/black"
+        android:fontFamily="@font/quicksand_semibold"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Bio goes here..."
+        android:textSize="16sp"
+        android:layout_centerHorizontal="true" />
+
+    <!-- Location -->
+    <TextView
+        android:id="@+id/location_text"
+        android:layout_below="@id/bio_text"
+        android:layout_marginTop="15dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/quicksand_semibold"
+        android:textColor="@color/black"
+        android:text="Location"
+        android:textSize="16sp"
+        android:layout_centerHorizontal="true" />
+
+
+    <Button
+        android:id="@+id/edit_profile_button"
+        android:layout_below="@id/location_text"
+        android:layout_marginTop="20dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/btn_darkblue"
+        app:backgroundTint="@null"
+        android:textSize="16sp"
+        android:fontFamily="@font/quicksand_bold"
+        android:textColor="@color/milky"
+        android:text="Edit Profile"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:id="@+id/about_us_text"
+        android:layout_below="@id/edit_profile_button"
+        android:layout_marginTop="20dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="About Us: This app helps users to connect with dog lovers."
+        android:textSize="14sp"
+        android:layout_centerHorizontal="true"
+        android:textColor="@android:color/darker_gray"/>
+
+</RelativeLayout>
