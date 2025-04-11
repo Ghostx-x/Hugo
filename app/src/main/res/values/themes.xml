@@ -5,7 +5,11 @@
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
     </style>
 
+<<<<<<< HEAD
     <style name="Theme.Hugo" parent="Base.Theme.Hugo" >
     <item name="android:statusBarColor">@color/darkblue</item>
     </style>
+=======
+    <style name="Theme.Hugo" parent="Base.Theme.Hugo" />
+>>>>>>> 5cbdb4be63784f0f808166bfbf4aacc506e0590b
 </resources>

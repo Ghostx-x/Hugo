@@ -1,6 +1,10 @@
 plugins {
+<<<<<<< HEAD
     id("com.android.application") version "8.6.0"
     id("com.google.gms.google-services")
+=======
+    alias(libs.plugins.android.application)
+>>>>>>> 5cbdb4be63784f0f808166bfbf4aacc506e0590b
 }
 
 android {
@@ -33,10 +37,15 @@ android {
 }
 
 dependencies {
+<<<<<<< HEAD
+=======
+
+>>>>>>> 5cbdb4be63784f0f808166bfbf4aacc506e0590b
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
+<<<<<<< HEAD
     implementation(libs.play.services.location)
 
     testImplementation(libs.junit)
@@ -59,4 +68,9 @@ dependencies {
 
 
 
+=======
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.ext.junit)
+    androidTestImplementation(libs.espresso.core)
+>>>>>>> 5cbdb4be63784f0f808166bfbf4aacc506e0590b
 }

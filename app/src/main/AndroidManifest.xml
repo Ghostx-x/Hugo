@@ -4,7 +4,10 @@
 
     <application
         android:allowBackup="true"
+<<<<<<< HEAD
         android:usesCleartextTraffic="true"
+=======
+>>>>>>> 5cbdb4be63784f0f808166bfbf4aacc506e0590b
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
@@ -13,6 +16,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Hugo"
         tools:targetApi="31">
+<<<<<<< HEAD
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
             android:value="@string/google_maps_key" />
@@ -34,19 +38,31 @@
         <activity
             android:name=".DogOwnerActivity"
             android:exported="false" />
+=======
+
+        <!-- WelcomeActivity is the main launcher activity -->
+>>>>>>> 5cbdb4be63784f0f808166bfbf4aacc506e0590b
         <activity
             android:name=".WelcomeActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+<<<<<<< HEAD
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+=======
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+>>>>>>> 5cbdb4be63784f0f808166bfbf4aacc506e0590b
         <activity
             android:name=".LoginActivity"
             android:exported="false" />
         <activity
+<<<<<<< HEAD
             android:name=".MainActivity"
             android:exported="true" />
     </application>
@@ -56,3 +72,13 @@
 
 
 </manifest>
+=======
+            android:name=".SignInActivity"
+            android:exported="false" />
+        <activity
+            android:name=".MainActivity"
+            android:exported="true" />
+    </application>
+
+</manifest>
+>>>>>>> 5cbdb4be63784f0f808166bfbf4aacc506e0590b

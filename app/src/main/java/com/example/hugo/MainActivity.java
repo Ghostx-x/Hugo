@@ -1,6 +1,7 @@
 package com.example.hugo;
 
 import android.os.Bundle;
+<<<<<<< HEAD
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,10 +19,21 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     private BottomNavigationView bottomNavigationView;
+=======
+
+import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+
+public class MainActivity extends AppCompatActivity {
+>>>>>>> 5cbdb4be63784f0f808166bfbf4aacc506e0590b
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+<<<<<<< HEAD
         setContentView(R.layout.activity_main);
 
         bottomNavigationView = findViewById(R.id.bottom_navigation);
@@ -78,3 +90,9 @@ public class MainActivity extends AppCompatActivity {
                 .commit();
     }
 }
+=======
+        EdgeToEdge.enable(this);
+        setContentView(R.layout.activity_main);
+    }
+}
+>>>>>>> 5cbdb4be63784f0f808166bfbf4aacc506e0590b

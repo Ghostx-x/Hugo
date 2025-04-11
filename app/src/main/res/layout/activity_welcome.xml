@@ -22,7 +22,11 @@
         android:id="@+id/welcome_title"
         android:layout_width="345dp"
         android:layout_height="58dp"
+<<<<<<< HEAD
         android:fontFamily="@font/baloo2_bold"
+=======
+        android:fontFamily="@font/baloo2_regular"
+>>>>>>> 5cbdb4be63784f0f808166bfbf4aacc506e0590b
         android:text="@string/welcome_title"
         android:textSize="36sp"
         android:textColor="@color/black"
@@ -36,7 +40,11 @@
         android:id="@+id/welcome_subtitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+<<<<<<< HEAD
         android:layout_marginTop="5dp"
+=======
+        android:layout_marginTop="10dp"
+>>>>>>> 5cbdb4be63784f0f808166bfbf4aacc506e0590b
         android:fontFamily="@font/quicksand_medium"
         android:text="@string/welcome_subtitle"
         android:textSize="15sp"
@@ -52,7 +60,10 @@
         android:layout_width="300dp"
         android:layout_height="60dp"
         android:layout_marginTop="60dp"
+<<<<<<< HEAD
         app:backgroundTint="@null"
+=======
+>>>>>>> 5cbdb4be63784f0f808166bfbf4aacc506e0590b
         android:background="@drawable/btn_darkblue"
         android:text="@string/btn_signIn"
         android:textSize="24sp"
@@ -67,7 +78,10 @@
         android:layout_width="300dp"
         android:layout_height="60dp"
         android:layout_marginTop="30dp"
+<<<<<<< HEAD
         app:backgroundTint="@null"
+=======
+>>>>>>> 5cbdb4be63784f0f808166bfbf4aacc506e0590b
         android:background="@drawable/btn_lightblue"
         android:text="@string/btn_login"
         android:textSize="24sp"

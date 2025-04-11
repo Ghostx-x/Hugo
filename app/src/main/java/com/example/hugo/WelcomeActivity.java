@@ -20,7 +20,12 @@ public class WelcomeActivity extends AppCompatActivity {
         signInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+<<<<<<< HEAD
                 Intent signInIntent = new Intent(WelcomeActivity.this, SignInFirst.class);
+=======
+                // Go to SignInActivity
+                Intent signInIntent = new Intent(WelcomeActivity.this, SignInActivity.class);
+>>>>>>> 5cbdb4be63784f0f808166bfbf4aacc506e0590b
                 startActivity(signInIntent);
             }
         });
