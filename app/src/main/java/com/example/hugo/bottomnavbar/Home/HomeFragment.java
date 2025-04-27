@@ -1,13 +1,19 @@
 package com.example.hugo.bottomnavbar.Home;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.cardview.widget.CardView;
 import com.example.hugo.R;
@@ -31,6 +37,8 @@ public class HomeFragment extends Fragment {
     private FirebaseAuth mAuth;
     private DatabaseReference databaseRef;
     private BottomNavigationView bottomNavigationView;
+    private ImageView smallProfileIcon;
+
 
     @Nullable
     @Override
@@ -134,6 +142,39 @@ public class HomeFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        mAuth = FirebaseAuth.getInstance();
+        databaseRef = FirebaseDatabase.getInstance().getReference("Users");
+
+        smallProfileIcon = view.findViewById(R.id.profileButton);
+
+        loadProfileImage();
+    }
+    private void loadProfileImage() {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user != null) {
+            databaseRef.child(user.getUid()).child("profileImageBase64")
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if (snapshot.exists()) {
+                                String base64Image = snapshot.getValue(String.class);
+                                byte[] decodedBytes = Base64.decode(base64Image, Base64.DEFAULT);
+                                Bitmap decodedBitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+                                smallProfileIcon.setImageBitmap(decodedBitmap);
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+                            Toast.makeText(getContext(), "Failed to load profile icon", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        }
+    }
 
 
     @Override
