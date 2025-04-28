@@ -1,12 +1,15 @@
 package com.example.hugo.bottomnavbar.Search;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -61,11 +64,22 @@ public class SearchFragment extends Fragment {
 
         usersRef = FirebaseDatabase.getInstance().getReference("Users");
 
+
+
+
         loadAllUsers();
 
         searchInput.addTextChangedListener(new TextWatcher() {
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-                filterUsers();
+            private final Handler handler = new Handler(Looper.getMainLooper());
+            private Runnable searchRunnable;
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (searchRunnable != null) {
+                    handler.removeCallbacks(searchRunnable);
+                }
+                searchRunnable = () -> filterUsers();
+                handler.postDelayed(searchRunnable, 300);
             }
 
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -82,6 +96,8 @@ public class SearchFragment extends Fragment {
     }
 
     private void loadAllUsers() {
+        noResultsText.setText("Loading...");
+        noResultsText.setVisibility(View.VISIBLE);
         usersRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -93,31 +109,34 @@ public class SearchFragment extends Fragment {
                     }
                 }
                 filterUsers();
+                noResultsText.setText("No results found");
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(getContext(), "Failed to load users", Toast.LENGTH_SHORT).show();
+                noResultsText.setText("Failed to load users");
+                Toast.makeText(getContext(), "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private void filterUsers() {
         String query = searchInput.getText().toString().toLowerCase().trim();
-        String selectedRole = roleFilter.getSelectedItem().toString();
+        String selectedRole = roleFilter.getSelectedItem().toString().toLowerCase();
 
         List<User> filtered = new ArrayList<>();
         for (User user : allUsers) {
             if (user == null) continue;
 
-            String name = user.name != null ? user.name : "";
-            String bio = user.bio != null ? user.bio : "";
-            String role = user.userType != null ? user.userType : "";
+            String name = user.name != null ? user.name.toLowerCase() : "";
+            String bio = user.bio != null ? user.bio.toLowerCase() : "";
+            String role = user.userType != null ? user.userType.toLowerCase() : "";
 
-            boolean matchesQuery = FuzzySearchUtil.isFuzzyMatch(query, name) ||
-                    FuzzySearchUtil.isFuzzyMatch(query, bio);
 
-            boolean matchesRole = selectedRole.equals("All") || role.equals(selectedRole);
+            boolean matchesQuery = query.isEmpty() || name.contains(query) || bio.contains(query);
+
+
+            boolean matchesRole = selectedRole.equals("all") || role.equals(selectedRole);
 
             if (matchesQuery && matchesRole) {
                 filtered.add(user);
@@ -127,10 +146,4 @@ public class SearchFragment extends Fragment {
         userAdapter.filterList(filtered);
         noResultsText.setVisibility(filtered.isEmpty() ? View.VISIBLE : View.GONE);
     }
-
-
-
-
-
 }
-
