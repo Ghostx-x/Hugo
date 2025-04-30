@@ -12,6 +12,7 @@ import com.example.hugo.bottomnavbar.Home.StoryFragment;
 import com.example.hugo.bottomnavbar.Search.SearchFragment;
 import com.example.hugo.bottomnavbar.LocationFragment;
 import com.example.hugo.bottomnavbar.Profile.ProfileFragment;
+import com.google.android.libraries.places.api.Places;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
@@ -31,6 +32,10 @@ public class MainActivity extends AppCompatActivity {
                     .replace(R.id.fragment_container, new HomeFragment())
                     .commit();
         }
+
+
+        Places.initialize(getApplicationContext(), getString(R.string.google_maps_key));
+
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             Fragment selectedFragment;
