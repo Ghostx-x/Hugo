@@ -50,7 +50,7 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
         super.onViewCreated(view, savedInstanceState);
         Log.d(TAG, "onViewCreated called");
 
-        // Check Google Play Services
+
         int resultCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(requireContext());
         if (resultCode != ConnectionResult.SUCCESS) {
             Log.e(TAG, "Google Play Services error: " + resultCode);
@@ -59,7 +59,7 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
         }
         Log.d(TAG, "Google Play Services available");
 
-        // Ensure BottomNavigationView is visible
+
         bottomNavigationView = getActivity().findViewById(R.id.bottom_navigation);
         if (bottomNavigationView != null) {
             bottomNavigationView.setVisibility(View.VISIBLE);
@@ -67,10 +67,10 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
             Log.w(TAG, "BottomNavigationView not found");
         }
 
-        // Initialize Firebase reference
+
         usersRef = FirebaseDatabase.getInstance().getReference("Users");
 
-        // Initialize the map
+
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
@@ -85,7 +85,7 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
         Log.d(TAG, "onMapReady called");
         mMap = googleMap;
 
-        // Fetch and display user locations
+
         fetchUsersAndAddMarkers();
     }
 
@@ -94,7 +94,7 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 Log.d(TAG, "Fetching users from Firebase");
-                mMap.clear(); // Clear existing markers
+                mMap.clear();
 
                 LatLngBounds.Builder boundsBuilder = new LatLngBounds.Builder();
                 int markerCount = 0;
@@ -108,16 +108,16 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
                     Double longitude = userSnap.child("longitude").getValue(Double.class);
                     String profileImageBase64 = userSnap.child("profileImageBase64").getValue(String.class);
 
-                    // Log user data
+
                     Log.d(TAG, "User: " + userId + ", username=" + username + ", userType=" + userType +
                             ", location=" + locationName + ", lat=" + latitude + ", lng=" + longitude +
                             ", hasProfileImage=" + (profileImageBase64 != null));
 
-                    // Add a marker if latitude and longitude are available
+
                     if (latitude != null && longitude != null && username != null) {
                         LatLng location = new LatLng(latitude, longitude);
 
-                        // Prepare the marker's info window content
+
                         StringBuilder snippetBuilder = new StringBuilder();
                         if (userType != null) {
                             snippetBuilder.append(userType);
@@ -130,29 +130,28 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
                             snippetBuilder.append("Lat: ").append(latitude).append(", Lng: ").append(longitude);
                         }
 
-                        // Create the marker
+
                         MarkerOptions markerOptions = new MarkerOptions()
                                 .position(location)
                                 .title(username)
                                 .snippet(snippetBuilder.toString());
 
-                        // Add custom circular icon if profile picture is available
+
                         if (profileImageBase64 != null) {
                             try {
                                 byte[] decodedBytes = Base64.decode(profileImageBase64, Base64.DEFAULT);
                                 Bitmap bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
-                                // Resize the bitmap to a larger size for the marker (80x80 pixels)
                                 Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 80, 80, false);
-                                // Transform to circular shape
+
                                 Bitmap circularBitmap = getCircularBitmap(scaledBitmap);
                                 markerOptions.icon(BitmapDescriptorFactory.fromBitmap(circularBitmap));
                             } catch (Exception e) {
                                 Log.e(TAG, "Failed to decode or transform profile image for user " + userId + ": " + e.getMessage(), e);
-                                // Fallback to default marker icon if decoding or transformation fails
+
                             }
                         }
 
-                        // Add the marker to the map
+
                         mMap.addMarker(markerOptions);
                         boundsBuilder.include(location);
                         markerCount++;
@@ -161,7 +160,7 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
                     }
                 }
 
-                // Adjust the camera to show all markers
+
                 if (markerCount > 0) {
                     LatLngBounds bounds = boundsBuilder.build();
                     mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100));
@@ -169,7 +168,7 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
                 } else {
                     Log.w(TAG, "No users with valid locations found in Firebase");
                     Toast.makeText(getContext(), "No user locations found", Toast.LENGTH_SHORT).show();
-                    // Default location (San Francisco)
+
                     LatLng defaultLocation = new LatLng(37.7749, -122.4194);
                     mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, 10));
                 }
@@ -179,7 +178,7 @@ public class LocationFragment extends Fragment implements OnMapReadyCallback {
             public void onCancelled(@NonNull DatabaseError error) {
                 Log.e(TAG, "Failed to load locations: " + error.getMessage(), error.toException());
                 Toast.makeText(getContext(), "Failed to load locations", Toast.LENGTH_SHORT).show();
-                // Default location on failure
+
                 LatLng defaultLocation = new LatLng(37.7749, -122.4194);
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, 10));
             }

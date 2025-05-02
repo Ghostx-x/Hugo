@@ -1,4 +1,5 @@
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="8dp"
@@ -27,7 +28,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1">
 
-            <TextView android:id="@+id/item_name"
+            <TextView
+                android:id="@+id/item_name"
                 android:text="Username"
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
@@ -36,7 +38,8 @@
                 android:textStyle="bold"
                 android:textSize="16sp"/>
 
-            <TextView android:id="@+id/item_bio"
+            <TextView
+                android:id="@+id/item_bio"
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
                 android:fontFamily="@font/quicksand_semibold"
@@ -45,7 +48,8 @@
                 android:textSize="14sp"
                 android:layout_marginTop="2dp"/>
 
-            <TextView android:id="@+id/item_role"
+            <TextView
+                android:id="@+id/item_role"
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
                 android:fontFamily="@font/quicksand_semibold"

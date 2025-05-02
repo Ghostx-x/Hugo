@@ -5,6 +5,7 @@ public class User {
     public String bio;
     public String userType;
     public String profileImageUrl;
+
     public User() {}
 
     public User(String name, String bio, String userType, String profileImageUrl) {
@@ -14,5 +15,4 @@ public class User {
         this.profileImageUrl = profileImageUrl;
     }
 }
-
 

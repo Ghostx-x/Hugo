@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -106,6 +107,7 @@ public class SearchFragment extends Fragment {
                     User user = userSnap.getValue(User.class);
                     if (user != null) {
                         allUsers.add(user);
+                        Log.d("SearchFragment", "User: " + user.name + ", Image URL: " + user.profileImageUrl);
                     }
                 }
                 filterUsers();

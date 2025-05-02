@@ -1,6 +1,7 @@
 package com.example.hugo.bottomnavbar.Search;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,9 +44,20 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         holder.roleText.setText(user.userType != null ? user.userType : "");
 
         if (user.profileImageUrl != null && !user.profileImageUrl.isEmpty()) {
-            Picasso.get().load(user.profileImageUrl).into(holder.profileImage);  // Load the image using Picasso
-        } else {
-            holder.profileImage.setImageResource(R.drawable.ic_profile);  // Default image
+            Picasso.get()
+                    .load(user.profileImageUrl)
+                    .placeholder(R.drawable.ic_profile)
+                    .error(R.drawable.ic_profile)
+                    .into(holder.profileImage, new com.squareup.picasso.Callback() {
+                        @Override
+                        public void onSuccess() {}
+                        @Override
+                        public void onError(Exception e) {
+                            Log.e("Picasso", "Failed to load image: " + user.profileImageUrl, e);
+                        }
+                    });
+        }else {
+            holder.profileImage.setImageResource(R.drawable.ic_profile);
         }
     }
 

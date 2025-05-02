@@ -31,6 +31,9 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.*;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -229,6 +232,23 @@ public class ProfileFragment extends Fragment {
         }
     }
 
+
+    public void uploadProfileImage(Uri imageUri, String userId) {
+        StorageReference storageRef = FirebaseStorage.getInstance().getReference("profile_images/" + userId + ".jpg");
+        UploadTask uploadTask = storageRef.putFile(imageUri);
+
+        uploadTask.addOnSuccessListener(taskSnapshot -> {
+            storageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                String downloadUrl = uri.toString();
+                FirebaseDatabase.getInstance().getReference("Users")
+                        .child(userId)
+                        .child("profileImageUrl")
+                        .setValue(downloadUrl);
+            });
+        }).addOnFailureListener(e -> {
+            Toast.makeText(getContext(), "Upload failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        });
+    }
     private void saveUserProfile(String username, String bio, String locationName, double latitude, double longitude) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("username", username);
