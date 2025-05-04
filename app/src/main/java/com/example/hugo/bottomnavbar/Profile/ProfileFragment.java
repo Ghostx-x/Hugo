@@ -90,7 +90,7 @@ public class ProfileFragment extends Fragment {
 
         sharedPreferences = requireActivity().getSharedPreferences("UserProfile", Context.MODE_PRIVATE);
 
-        // Initialize the map location launcher
+
         mapLocationLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {

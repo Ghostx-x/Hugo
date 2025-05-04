@@ -42,7 +42,6 @@ public class MapLocationActivity extends AppCompatActivity implements OnMapReady
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate called");
 
-        // Check Google Play Services
         int resultCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this);
         if (resultCode != ConnectionResult.SUCCESS) {
             Log.e(TAG, "Google Play Services error: " + resultCode);
@@ -103,7 +102,7 @@ public class MapLocationActivity extends AppCompatActivity implements OnMapReady
         myMap = googleMap;
         myMap.setOnMarkerDragListener(this);
 
-        // Check location permission
+
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
@@ -135,7 +134,7 @@ public class MapLocationActivity extends AppCompatActivity implements OnMapReady
                 LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
                 selectedLatLng = currentLocation;
 
-                // Add a draggable marker at the current location
+
                 selectedLocationMarker = myMap.addMarker(new MarkerOptions()
                         .position(currentLocation)
                         .title("Your Location")
@@ -157,7 +156,7 @@ public class MapLocationActivity extends AppCompatActivity implements OnMapReady
         }).addOnFailureListener(e -> {
             Log.e(TAG, "Failed to get location: " + e.getMessage(), e);
             Toast.makeText(this, "Failed to get location", Toast.LENGTH_SHORT).show();
-            // Default to a location (e.g., Sydney)
+
             selectedLatLng = new LatLng(-33.8688, 151.2093);
             selectedLocationMarker = myMap.addMarker(new MarkerOptions()
                     .position(selectedLatLng)
@@ -176,7 +175,7 @@ public class MapLocationActivity extends AppCompatActivity implements OnMapReady
             } else {
                 Log.w(TAG, "Location permission denied");
                 Toast.makeText(this, "Location permission is denied, please allow the permission", Toast.LENGTH_LONG).show();
-                // Default to a location (e.g., Sydney)
+
                 selectedLatLng = new LatLng(-33.8688, 151.2093);
                 selectedLocationMarker = myMap.addMarker(new MarkerOptions()
                         .position(selectedLatLng)
@@ -194,7 +193,7 @@ public class MapLocationActivity extends AppCompatActivity implements OnMapReady
 
     @Override
     public void onMarkerDrag(Marker marker) {
-        // Optional: Update UI during drag
+
     }
 
     @Override

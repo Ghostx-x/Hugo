@@ -106,6 +106,7 @@ public class SearchFragment extends Fragment {
                 for (DataSnapshot userSnap : snapshot.getChildren()) {
                     User user = userSnap.getValue(User.class);
                     if (user != null) {
+                        user.userId = userSnap.getKey();
                         allUsers.add(user);
                         Log.d("SearchFragment", "User: " + user.name + ", Image URL: " + user.profileImageUrl);
                     }

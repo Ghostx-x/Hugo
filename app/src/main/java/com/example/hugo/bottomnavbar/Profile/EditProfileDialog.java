@@ -114,7 +114,7 @@ public class EditProfileDialog extends Dialog {
     public void updateLocation(double latitude, double longitude) {
         this.currentLatitude = latitude;
         this.currentLongitude = longitude;
-        // Convert coordinates to a place name
+
         String placeName = getPlaceName(latitude, longitude);
         this.currentLocationName = placeName != null ? placeName : "Lat: " + latitude + ", Lng: " + longitude;
         selectedLocationText.setText(currentLocationName);
@@ -127,7 +127,7 @@ public class EditProfileDialog extends Dialog {
             List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
             if (addresses != null && !addresses.isEmpty()) {
                 Address address = addresses.get(0);
-                // Build a readable address string
+
                 StringBuilder addressString = new StringBuilder();
                 for (int i = 0; i <= address.getMaxAddressLineIndex(); i++) {
                     if (i > 0) addressString.append(", ");

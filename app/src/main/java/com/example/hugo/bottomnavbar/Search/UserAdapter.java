@@ -1,7 +1,6 @@
 package com.example.hugo.bottomnavbar.Search;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +8,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.hugo.R;
@@ -48,33 +48,34 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
                     .load(user.profileImageUrl)
                     .placeholder(R.drawable.ic_profile)
                     .error(R.drawable.ic_profile)
-                    .into(holder.profileImage, new com.squareup.picasso.Callback() {
-                        @Override
-                        public void onSuccess() {}
-                        @Override
-                        public void onError(Exception e) {
-                            Log.e("Picasso", "Failed to load image: " + user.profileImageUrl, e);
-                        }
-                    });
-        }else {
+                    .into(holder.profileImage);
+        } else {
             holder.profileImage.setImageResource(R.drawable.ic_profile);
         }
+
+        // Navigate to ViewProfileFragment on click
+        holder.itemView.setOnClickListener(v -> {
+            if (context instanceof FragmentActivity) {
+                FragmentActivity activity = (FragmentActivity) context;
+                ViewProfileFragment fragment = ViewProfileFragment.newInstance(userList.get(position).userId);
+                activity.getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.fragment_container, fragment)
+                        .addToBackStack(null)
+                        .commit();
+            }
+        });
     }
-
-
 
     @Override
     public int getItemCount() {
         return (userList != null) ? userList.size() : 0;
     }
 
-
-
     public void filterList(List<User> filteredList) {
         this.userList = filteredList != null ? filteredList : new ArrayList<>();
         notifyDataSetChanged();
     }
-
 
     static class UserViewHolder extends RecyclerView.ViewHolder {
         ImageView profileImage;
@@ -89,4 +90,3 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         }
     }
 }
-
