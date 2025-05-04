@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <TextView
+        android:id="@+id/day_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/quicksand_bold"
+        android:text="Day"
+        android:textColor="@color/black"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/slots_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/quicksand_semibold"
+        android:text="No slots"
+        android:textColor="@color/black"
+        android:textSize="14sp"
+        android:layout_marginTop="4dp" />
+
+    <Button
+        android:id="@+id/add_slot_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add Time Slot"
+        android:backgroundTint="@color/darkblue"
+        android:textColor="@color/milky"
+        android:fontFamily="@font/quicksand_bold"
+        android:layout_marginTop="4dp" />
+</LinearLayout>

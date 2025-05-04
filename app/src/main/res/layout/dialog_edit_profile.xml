@@ -1,67 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:background="@android:color/white">
+    android:fillViewport="true">
 
-    <com.google.android.material.textfield.TextInputLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/username_input"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="@color/milky">
+
+        <!-- Username Input -->
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Username"
-            android:fontFamily="@font/quicksand_medium"
-            android:inputType="textPersonName" />
-    </com.google.android.material.textfield.TextInputLayout>
+            android:layout_marginBottom="16dp">
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/bio_input"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/username_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/quicksand_semibold"
+                android:textColor="@color/black"
+                android:textSize="16sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Bio Input -->
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Bio"
-            android:fontFamily="@font/quicksand_medium"
-            android:inputType="textMultiLine" />
-    </com.google.android.material.textfield.TextInputLayout>
+            android:layout_marginBottom="16dp">
 
-    <Button
-        android:id="@+id/select_location_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Select Location"
-        android:backgroundTint="@color/darkblue"
-        android:fontFamily="@font/quicksand_bold"
-        android:textColor="@android:color/white" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/bio_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/quicksand_semibold"
+                android:textColor="@color/black"
+                android:textSize="16sp" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-    <TextView
-        android:id="@+id/selected_location_text"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="No location selected"
-        android:textColor="@color/black"
-        android:fontFamily="@font/quicksand_medium"
-        android:textSize="16sp" />
+        <!-- Location Selection -->
+        <TextView
+            android:id="@+id/selected_location_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No location selected"
+            android:textColor="@color/black"
+            android:fontFamily="@font/quicksand_semibold"
+            android:textSize="16sp"
+            android:layout_marginBottom="8dp" />
 
-    <Button
-        android:id="@+id/save_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:layout_marginTop="16dp"
-        android:backgroundTint="@color/darkblue"
-        android:fontFamily="@font/quicksand_bold"
-        android:text="Save"
-        android:textColor="@android:color/white" />
+        <Button
+            android:id="@+id/select_location_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Select Location"
+            android:backgroundTint="@color/darkblue"
+            android:textColor="@color/milky"
+            android:fontFamily="@font/quicksand_bold"
+            android:layout_marginBottom="16dp" />
 
-</LinearLayout>
+        <!-- Availability Container -->
+        <LinearLayout
+            android:id="@+id/availability_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Save Button -->
+        <Button
+            android:id="@+id/save_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Save"
+            android:backgroundTint="@color/darkblue"
+            android:textColor="@color/milky"
+            android:fontFamily="@font/quicksand_bold" />
+    </LinearLayout>
+</ScrollView>

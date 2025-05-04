@@ -1,89 +1,191 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/milky"
-    android:padding="20dp">
+    android:padding="16dp">
 
-
-    <com.google.android.material.imageview.ShapeableImageView
-        android:id="@+id/profile_image"
-        android:layout_width="75dp"
-        android:layout_height="75dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="20dp"
-        android:src="@drawable/ic_profile"
-        android:layout_centerHorizontal="true"
-        android:scaleType="centerCrop"
-        app:strokeWidth="0dp"
-        app:strokeColor="@color/black"
-        app:shapeAppearanceOverlay="@style/CircularShape" />
-
-
-    <TextView
-        android:id="@+id/username_text"
-        android:layout_below="@id/profile_image"
-        android:layout_marginTop="5dp"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Username"
-        android:textSize="20sp"
-        android:textColor="@color/black"
-        android:fontFamily="@font/baloo2_semibold"
-        android:textStyle="bold"
-        android:layout_centerHorizontal="true" />
+        android:orientation="vertical">
 
+        <!-- Profile Image -->
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/profile_image"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center"
+            android:layout_marginBottom="16dp"
+            android:src="@drawable/ic_profile"
+            android:scaleType="centerCrop"
+            app:shapeAppearanceOverlay="@style/CircularShape" />
 
-    <TextView
-        android:id="@+id/bio_text"
-        android:layout_below="@id/username_text"
-        android:layout_marginTop="15dp"
-        android:textColor="@color/black"
-        android:fontFamily="@font/quicksand_semibold"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Bio goes here..."
-        android:textSize="16sp"
-        android:layout_centerHorizontal="true" />
+        <!-- Profile Name -->
+        <TextView
+            android:id="@+id/profile_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="No Name"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:fontFamily="@font/quicksand_bold" />
 
-    <!-- Location -->
-    <TextView
-        android:id="@+id/location_text"
-        android:layout_below="@id/bio_text"
-        android:layout_marginTop="15dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/quicksand_semibold"
-        android:textColor="@color/black"
-        android:text="Location"
-        android:textSize="16sp"
-        android:layout_centerHorizontal="true" />
+        <!-- Bio -->
+        <TextView
+            android:id="@+id/profile_bio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="8dp"
+            android:text="No bio"
+            android:textColor="@color/black"
+            android:fontFamily="@font/quicksand_semibold"
+            android:textSize="16sp" />
 
+        <!-- Location -->
+        <TextView
+            android:id="@+id/profile_location"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="8dp"
+            android:text="No location"
+            android:textColor="@color/black"
+            android:fontFamily="@font/quicksand_semibold"
+            android:textSize="16sp" />
 
-    <Button
-        android:id="@+id/edit_profile_button"
-        android:layout_below="@id/location_text"
-        android:layout_marginTop="20dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@drawable/btn_darkblue"
-        app:backgroundTint="@null"
-        android:textSize="16sp"
-        android:fontFamily="@font/quicksand_bold"
-        android:textColor="@color/milky"
-        android:text="Edit Profile"
-        android:layout_centerHorizontal="true" />
+        <!-- Availability -->
+        <TextView
+            android:id="@+id/availability_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="8dp"
+            android:text="Availability: Not set"
+            android:textColor="@color/black"
+            android:fontFamily="@font/quicksand_semibold"
+            android:textSize="16sp"
+            android:visibility="gone" />
 
-    <TextView
-        android:id="@+id/about_us_text"
-        android:layout_below="@id/edit_profile_button"
-        android:layout_marginTop="20dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="About Us: This app helps users manage their profile easily."
-        android:textSize="14sp"
-        android:layout_centerHorizontal="true"
-        android:textColor="@android:color/darker_gray"/>
+        <!-- Edit Profile Button -->
+        <Button
+            android:id="@+id/edit_profile_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:text="Edit Profile"
+            android:backgroundTint="@color/darkblue"
+            android:textColor="@color/milky"
+            android:fontFamily="@font/quicksand_bold" />
 
-</RelativeLayout>
+        <!-- Dog Form for Dog Owners -->
+        <LinearLayout
+            android:id="@+id/dog_form_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="16dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Dog Information"
+                android:textColor="@color/black"
+                android:textSize="18sp"
+                android:fontFamily="@font/quicksand_bold"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Dog Name -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Dog Name"
+                android:layout_marginBottom="8dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/dog_name_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/quicksand_semibold"
+                    android:textColor="@color/black"
+                    android:textSize="16sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Dog Birthday -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Dog Birthday (MM/DD/YYYY)"
+                android:layout_marginBottom="8dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/dog_birthday_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/quicksand_semibold"
+                    android:textColor="@color/black"
+                    android:textSize="16sp"
+                    android:focusable="false"
+                    android:cursorVisible="false" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Dog Breed -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Dog Breed"
+                android:layout_marginBottom="8dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/dog_breed_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/quicksand_semibold"
+                    android:textColor="@color/black"
+                    android:textSize="16sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Dog Picture -->
+            <Button
+                android:id="@+id/dog_picture_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Select Dog Picture"
+                android:backgroundTint="@color/darkblue"
+                android:textColor="@color/milky"
+                android:fontFamily="@font/quicksand_bold"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Special Care -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Special Care Needs"
+                android:layout_marginBottom="8dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/dog_special_care_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/quicksand_semibold"
+                    android:textColor="@color/black"
+                    android:textSize="16sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Save Dog Button -->
+            <Button
+                android:id="@+id/save_dog_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Save Dog Info"
+                android:backgroundTint="@color/darkblue"
+                android:textColor="@color/milky"
+                android:fontFamily="@font/quicksand_bold" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>
