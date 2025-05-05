@@ -29,6 +29,9 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +46,7 @@ public class SearchFragment extends Fragment {
     private DatabaseReference usersRef;
     private TextView noResultsText;
     private BottomNavigationView bottomNavigationView;
+    private String currentUserId;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -65,7 +69,10 @@ public class SearchFragment extends Fragment {
 
         usersRef = FirebaseDatabase.getInstance().getReference("Users");
 
-
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            currentUserId = currentUser.getUid();
+        }
 
 
         loadAllUsers();
@@ -107,8 +114,9 @@ public class SearchFragment extends Fragment {
                     User user = userSnap.getValue(User.class);
                     if (user != null) {
                         user.userId = userSnap.getKey();
-                        allUsers.add(user);
-                        Log.d("SearchFragment", "User: " + user.name + ", Image URL: " + user.profileImageUrl);
+                        if (!user.userId.equals(currentUserId)) {
+                            allUsers.add(user);
+                        }
                     }
                 }
                 filterUsers();

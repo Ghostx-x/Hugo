@@ -166,14 +166,14 @@ public class EditProfileDialog extends Dialog {
     }
 
     private void showTimeSlotDialog(String day, TextView slotsText) {
-        // Start time picker
         TimePickerDialog startTimePicker = new TimePickerDialog(
                 getContext(),
+                R.style.DarkTimePickerDialog,
                 (view, hour, minute) -> {
                     String startTime = String.format(Locale.getDefault(), "%02d:%02d", hour, minute);
-                    // End time picker
                     TimePickerDialog endTimePicker = new TimePickerDialog(
                             getContext(),
+                            R.style.DarkTimePickerDialog,
                             (endView, endHour, endMinute) -> {
                                 String endTime = String.format(Locale.getDefault(), "%02d:%02d", endHour, endMinute);
                                 String timeSlot = startTime + "-" + endTime;

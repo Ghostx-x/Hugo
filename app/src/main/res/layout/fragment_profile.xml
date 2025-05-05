@@ -1,191 +1,170 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/milky"
-    android:padding="16dp">
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@color/milky">
 
+    <!-- Profile Image -->
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/profile_image"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center"
+        android:src="@drawable/ic_profile"
+        android:clickable="true"
+        android:focusable="true"
+        android:contentDescription="Profile Image"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Profile Name -->
+    <TextView
+        android:id="@+id/profile_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No Name"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        android:fontFamily="@font/quicksand_bold"
+        android:layout_gravity="center"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Profile Bio -->
+    <TextView
+        android:id="@+id/profile_bio"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No bio"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:fontFamily="@font/quicksand_semibold"
+        android:layout_gravity="center"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Profile Location -->
+    <TextView
+        android:id="@+id/profile_location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No location"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:fontFamily="@font/quicksand_semibold"
+        android:layout_gravity="center"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Edit Profile Button -->
+    <Button
+        android:id="@+id/edit_profile_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Edit Profile"
+        android:backgroundTint="@color/darkblue"
+        android:textColor="@color/milky"
+        android:fontFamily="@font/quicksand_bold"
+        android:layout_gravity="center"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Availability -->
+    <TextView
+        android:id="@+id/availability_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Availability: Not set"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:fontFamily="@font/quicksand_semibold"
+        android:visibility="gone"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Dog Form -->
     <LinearLayout
+        android:id="@+id/dog_form_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:visibility="gone">
 
-        <!-- Profile Image -->
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/profile_image"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_gravity="center"
-            android:layout_marginBottom="16dp"
-            android:src="@drawable/ic_profile"
-            android:scaleType="centerCrop"
-            app:shapeAppearanceOverlay="@style/CircularShape" />
-
-        <!-- Profile Name -->
-        <TextView
-            android:id="@+id/profile_name"
-            android:layout_width="wrap_content"
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="No Name"
-            android:textColor="@color/black"
-            android:textSize="20sp"
-            android:fontFamily="@font/quicksand_bold" />
+            android:hint="Dog Name"
+            android:layout_marginBottom="8dp">
 
-        <!-- Bio -->
-        <TextView
-            android:id="@+id/profile_bio"
-            android:layout_width="wrap_content"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/dog_name_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/quicksand_semibold"
+                android:textColor="@color/black"
+                android:textSize="16sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="8dp"
-            android:text="No bio"
-            android:textColor="@color/black"
-            android:fontFamily="@font/quicksand_semibold"
-            android:textSize="16sp" />
+            android:hint="Dog Birthday (MM/DD/YYYY)"
+            android:layout_marginBottom="8dp">
 
-        <!-- Location -->
-        <TextView
-            android:id="@+id/profile_location"
-            android:layout_width="wrap_content"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/dog_birthday_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/quicksand_semibold"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                android:focusable="false"
+                android:cursorVisible="false" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="8dp"
-            android:text="No location"
-            android:textColor="@color/black"
-            android:fontFamily="@font/quicksand_semibold"
-            android:textSize="16sp" />
+            android:hint="Dog Breed"
+            android:layout_marginBottom="8dp">
 
-        <!-- Availability -->
-        <TextView
-            android:id="@+id/availability_text"
-            android:layout_width="wrap_content"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/dog_breed_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/quicksand_semibold"
+                android:textColor="@color/black"
+                android:textSize="16sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="8dp"
-            android:text="Availability: Not set"
-            android:textColor="@color/black"
-            android:fontFamily="@font/quicksand_semibold"
-            android:textSize="16sp"
-            android:visibility="gone" />
+            android:hint="Special Care Instructions"
+            android:layout_marginBottom="8dp">
 
-        <!-- Edit Profile Button -->
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/dog_special_care_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/quicksand_semibold"
+                android:textColor="@color/black"
+                android:textSize="16sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
         <Button
-            android:id="@+id/edit_profile_button"
+            android:id="@+id/dog_picture_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="16dp"
-            android:text="Edit Profile"
+            android:text="Select Dog Picture"
+            android:backgroundTint="@color/darkblue"
+            android:textColor="@color/milky"
+            android:fontFamily="@font/quicksand_bold"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/save_dog_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Save Dog Info"
             android:backgroundTint="@color/darkblue"
             android:textColor="@color/milky"
             android:fontFamily="@font/quicksand_bold" />
-
-        <!-- Dog Form for Dog Owners -->
-        <LinearLayout
-            android:id="@+id/dog_form_container"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="16dp"
-            android:visibility="gone">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Dog Information"
-                android:textColor="@color/black"
-                android:textSize="18sp"
-                android:fontFamily="@font/quicksand_bold"
-                android:layout_marginBottom="8dp" />
-
-            <!-- Dog Name -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Dog Name"
-                android:layout_marginBottom="8dp">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/dog_name_input"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/quicksand_semibold"
-                    android:textColor="@color/black"
-                    android:textSize="16sp" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- Dog Birthday -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Dog Birthday (MM/DD/YYYY)"
-                android:layout_marginBottom="8dp">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/dog_birthday_input"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/quicksand_semibold"
-                    android:textColor="@color/black"
-                    android:textSize="16sp"
-                    android:focusable="false"
-                    android:cursorVisible="false" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- Dog Breed -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Dog Breed"
-                android:layout_marginBottom="8dp">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/dog_breed_input"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/quicksand_semibold"
-                    android:textColor="@color/black"
-                    android:textSize="16sp" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- Dog Picture -->
-            <Button
-                android:id="@+id/dog_picture_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Select Dog Picture"
-                android:backgroundTint="@color/darkblue"
-                android:textColor="@color/milky"
-                android:fontFamily="@font/quicksand_bold"
-                android:layout_marginBottom="8dp" />
-
-            <!-- Special Care -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Special Care Needs"
-                android:layout_marginBottom="8dp">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/dog_special_care_input"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/quicksand_semibold"
-                    android:textColor="@color/black"
-                    android:textSize="16sp" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- Save Dog Button -->
-            <Button
-                android:id="@+id/save_dog_button"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Save Dog Info"
-                android:backgroundTint="@color/darkblue"
-                android:textColor="@color/milky"
-                android:fontFamily="@font/quicksand_bold" />
-        </LinearLayout>
     </LinearLayout>
-</ScrollView>
+</LinearLayout>

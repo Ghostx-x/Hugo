@@ -3,6 +3,7 @@ package com.example.hugo.bottomnavbar.Profile;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -24,6 +25,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.hugo.R;
 import com.example.hugo.bottomnavbar.Search.User;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
@@ -56,7 +58,9 @@ public class ProfileFragment extends Fragment implements EditProfileDialog.OnPro
     private FirebaseUser currentUser;
     private String userId;
     private String dogImageBase64;
-    private ActivityResultLauncher<Intent> imagePickerLauncher;
+    private ActivityResultLauncher<Intent> dogImagePickerLauncher;
+    private ActivityResultLauncher<Intent> profileImagePickerLauncher;
+    private StorageReference storageReference;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -70,8 +74,7 @@ public class ProfileFragment extends Fragment implements EditProfileDialog.OnPro
         userId = currentUser.getUid();
         userRef = FirebaseDatabase.getInstance().getReference("Users").child(userId);
 
-        // Initialize image picker
-        imagePickerLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+        dogImagePickerLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
             if (result.getResultCode() == getActivity().RESULT_OK && result.getData() != null) {
                 Uri imageUri = result.getData().getData();
                 try {
@@ -80,10 +83,24 @@ public class ProfileFragment extends Fragment implements EditProfileDialog.OnPro
                     bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                     byte[] data = baos.toByteArray();
                     dogImageBase64 = Base64.encodeToString(data, Base64.DEFAULT);
-                    profileImage.setImageBitmap(bitmap); // Preview
                     Log.d(TAG, "Dog image selected and encoded");
                 } catch (Exception e) {
                     Log.e(TAG, "Failed to load dog image: " + e.getMessage(), e);
+                    Toast.makeText(getContext(), "Failed to load image", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        profileImagePickerLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            if (result.getResultCode() == getActivity().RESULT_OK && result.getData() != null) {
+                Uri imageUri = result.getData().getData();
+                try {
+                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), imageUri);
+                    profileImage.setImageBitmap(bitmap);
+                    uploadProfileImageToFirebase(imageUri);
+                    Log.d(TAG, "Profile image selected: " + imageUri);
+                } catch (Exception e) {
+                    Log.e(TAG, "Failed to load profile image: " + e.getMessage(), e);
                     Toast.makeText(getContext(), "Failed to load image", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -100,7 +117,14 @@ public class ProfileFragment extends Fragment implements EditProfileDialog.OnPro
         super.onViewCreated(view, savedInstanceState);
         Log.d(TAG, "onViewCreated called");
 
-        // Initialize UI
+        BottomNavigationView bottomNavigationView = getActivity().findViewById(R.id.bottom_navigation);
+        if (bottomNavigationView != null) {
+            bottomNavigationView.setVisibility(View.VISIBLE);
+            bottomNavigationView.setSelectedItemId(R.id.nav_profile);
+        } else {
+            Log.w(TAG, "BottomNavigationView not found");
+        }
+
         profileImage = view.findViewById(R.id.profile_image);
         profileName = view.findViewById(R.id.profile_name);
         profileBio = view.findViewById(R.id.profile_bio);
@@ -115,10 +139,16 @@ public class ProfileFragment extends Fragment implements EditProfileDialog.OnPro
         dogSpecialCareInput = view.findViewById(R.id.dog_special_care_input);
         saveDogButton = view.findViewById(R.id.save_dog_button);
 
-        // Load user data
+
+        profileImage.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            profileImagePickerLauncher.launch(intent);
+        });
+
+
         loadUserData();
 
-        // Edit profile
+
         editProfileButton.setOnClickListener(v -> {
             userRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
@@ -135,10 +165,7 @@ public class ProfileFragment extends Fragment implements EditProfileDialog.OnPro
                                 user.userType != null ? user.userType : "",
                                 user.availability,
                                 ProfileFragment.this,
-                                () -> {
-                                    // Launch location picker (implement as needed)
-                                    Toast.makeText(getContext(), "Location picker not implemented", Toast.LENGTH_SHORT).show();
-                                }
+                                () -> Toast.makeText(getContext(), "Location picker not implemented", Toast.LENGTH_SHORT).show()
                         );
                         dialog.show();
                     }
@@ -151,7 +178,7 @@ public class ProfileFragment extends Fragment implements EditProfileDialog.OnPro
             });
         });
 
-        // Dog birthday picker
+
         dogBirthdayInput.setOnClickListener(v -> {
             Calendar calendar = Calendar.getInstance();
             DatePickerDialog datePicker = new DatePickerDialog(
@@ -168,13 +195,13 @@ public class ProfileFragment extends Fragment implements EditProfileDialog.OnPro
             datePicker.show();
         });
 
-        // Dog picture picker
+
         dogPictureButton.setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-            imagePickerLauncher.launch(intent);
+            dogImagePickerLauncher.launch(intent);
         });
 
-        // Save dog info
+
         saveDogButton.setOnClickListener(v -> saveDogInfo());
     }
 
@@ -189,10 +216,11 @@ public class ProfileFragment extends Fragment implements EditProfileDialog.OnPro
                     return;
                 }
 
-                // Display user info
+
                 profileName.setText(user.name != null ? user.name : "No Name");
                 profileBio.setText(user.bio != null ? user.bio : "No bio");
                 profileLocation.setText(user.locationName != null && !user.locationName.isEmpty() ? user.locationName : "No location");
+
 
                 if (user.profileImageUrl != null && !user.profileImageUrl.isEmpty()) {
                     Picasso.get()
@@ -200,11 +228,16 @@ public class ProfileFragment extends Fragment implements EditProfileDialog.OnPro
                             .placeholder(R.drawable.ic_profile)
                             .error(R.drawable.ic_profile)
                             .into(profileImage);
+                } else if (user.profileImageBase64 != null && !user.profileImageBase64.isEmpty()) {
+
+                    byte[] decodedBytes = Base64.decode(user.profileImageBase64, Base64.DEFAULT);
+                    Bitmap decodedBitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+                    profileImage.setImageBitmap(decodedBitmap);
                 } else {
                     profileImage.setImageResource(R.drawable.ic_profile);
                 }
 
-                // Display availability for service providers
+
                 if (isServiceProvider(user.userType) && user.availability != null && !user.availability.isEmpty()) {
                     StringBuilder availabilityString = new StringBuilder();
                     for (Map.Entry<String, List<String>> entry : user.availability.entrySet()) {
@@ -219,7 +252,6 @@ public class ProfileFragment extends Fragment implements EditProfileDialog.OnPro
                     dogFormContainer.setVisibility(View.GONE);
                 } else {
                     availabilityText.setVisibility(View.GONE);
-                    // Show dog form for dog owners
                     if (user.userType != null && user.userType.equalsIgnoreCase("Dog Owner")) {
                         dogFormContainer.setVisibility(View.VISIBLE);
                         if (user.dog != null) {
@@ -242,6 +274,28 @@ public class ProfileFragment extends Fragment implements EditProfileDialog.OnPro
         });
     }
 
+    private void uploadProfileImageToFirebase(Uri imageUri) {
+        StorageReference storageRef = FirebaseStorage.getInstance().getReference()
+                .child("profile_images/" + userId + "_" + System.currentTimeMillis() + ".jpg");
+        storageRef.putFile(imageUri)
+                .addOnSuccessListener(taskSnapshot -> storageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                    String downloadUrl = uri.toString();
+                    userRef.child("profileImageUrl").setValue(downloadUrl)
+                            .addOnSuccessListener(aVoid -> {
+                                Log.d(TAG, "Profile image URL saved: " + downloadUrl);
+                                Toast.makeText(getContext(), "Profile image updated", Toast.LENGTH_SHORT).show();
+                            })
+                            .addOnFailureListener(e -> {
+                                Log.e(TAG, "Failed to save profile image URL: " + e.getMessage());
+                                Toast.makeText(getContext(), "Failed to save image URL", Toast.LENGTH_SHORT).show();
+                            });
+                }))
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Failed to upload profile image: " + e.getMessage());
+                    Toast.makeText(getContext(), "Failed to upload image", Toast.LENGTH_SHORT).show();
+                });
+    }
+
     private void saveDogInfo() {
         String dogName = dogNameInput.getText().toString().trim();
         String dogBirthday = dogBirthdayInput.getText().toString().trim();
@@ -254,7 +308,6 @@ public class ProfileFragment extends Fragment implements EditProfileDialog.OnPro
             return;
         }
 
-        // Calculate age from birthday
         int dogAge = calculateAge(dogBirthday);
         if (dogAge < 0) {
             Log.w(TAG, "Invalid birthday: " + dogBirthday);
@@ -262,7 +315,6 @@ public class ProfileFragment extends Fragment implements EditProfileDialog.OnPro
             return;
         }
 
-        // Upload dog image if selected
         if (dogImageBase64 != null) {
             StorageReference storageRef = FirebaseStorage.getInstance().getReference()
                     .child("dog_images/" + userId + "_" + System.currentTimeMillis() + ".jpg");
@@ -275,7 +327,6 @@ public class ProfileFragment extends Fragment implements EditProfileDialog.OnPro
                         Toast.makeText(getContext(), "Failed to upload image", Toast.LENGTH_SHORT).show();
                     });
         } else {
-            // Use existing image or null
             userRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {

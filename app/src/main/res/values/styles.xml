@@ -22,4 +22,13 @@
     </style>
 
 
+    <style name="DarkTimePickerDialog" parent="Theme.AppCompat.Dialog">
+        <item name="android:background">@color/darkblue</item>
+        <item name="android:buttonBarButtonStyle">@style/BlackButton</item>
+    </style>
+
+    <style name="BlackButton" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@android:color/black</item>
+    </style>
+
 </resources>
