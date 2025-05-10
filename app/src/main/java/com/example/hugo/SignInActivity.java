@@ -58,12 +58,10 @@ public class SignInActivity extends AppCompatActivity {
                         radioGroup.setVisibility(View.GONE);
                         signInButton.setVisibility(View.GONE);
 
-                        fragmentContainer.setVisibility(View.VISIBLE);
-
-                        getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.fragment_container, new DogOwnerDetailsFragmentOne())
-                                .addToBackStack(null)
-                                .commit();
+                        // Navigate to MainActivity, where ProfileFragment will handle dog setup
+                        Intent intent = new Intent(SignInActivity.this, MainActivity.class);
+                        startActivity(intent);
+                        finish();
                     } else if (selectedRadioButton.getId() == R.id.radioWalker) {
                         Toast.makeText(SignInActivity.this, "You selected: Dog Walker", Toast.LENGTH_SHORT).show();
                         userType = "Dog Walker";
@@ -72,8 +70,6 @@ public class SignInActivity extends AppCompatActivity {
                         signInButton.setVisibility(View.GONE);
 
                         fragmentContainer.setVisibility(View.VISIBLE);
-
-
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.fragment_container, new DogWalkerDetailsFragment())
                                 .addToBackStack(null)
@@ -86,8 +82,6 @@ public class SignInActivity extends AppCompatActivity {
                         signInButton.setVisibility(View.GONE);
 
                         fragmentContainer.setVisibility(View.VISIBLE);
-
-
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.fragment_container, new TrainerDetailsFragment())
                                 .addToBackStack(null)
@@ -100,6 +94,7 @@ public class SignInActivity extends AppCompatActivity {
             }
         });
     }
+
     private void saveUserTypeToFirebase(String userType) {
         FirebaseUser user = mAuth.getCurrentUser();
         if (user != null) {

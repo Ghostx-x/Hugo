@@ -1,5 +1,7 @@
 package com.example.hugo.bottomnavbar.Home;
 
+import static android.content.ContentValues.TAG;
+
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -8,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +30,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,8 +42,7 @@ public class HomeFragment extends Fragment {
     private FirebaseAuth mAuth;
     private DatabaseReference databaseRef;
     private BottomNavigationView bottomNavigationView;
-    private ImageView smallProfileIcon;
-
+    private ShapeableImageView smallProfileIcon;
 
     @Nullable
     @Override
@@ -49,10 +53,14 @@ public class HomeFragment extends Fragment {
         bottomNavigationView.setVisibility(View.VISIBLE);
 
         ShapeableImageView profileButton = view.findViewById(R.id.profileButton);
+        profileButton.setShapeAppearanceModel(
+                profileButton.getShapeAppearanceModel()
+                        .toBuilder()
+                        .setAllCorners(com.google.android.material.shape.CornerFamily.ROUNDED, 50f)
+                        .build());
         profileButton.setOnClickListener(v -> {
             navigateToProfileFragment();
         });
-
 
         CardView cardView1 = view.findViewById(R.id.card_best_foods);
         CardView cardView2 = view.findViewById(R.id.card_behavior_training);
@@ -60,7 +68,6 @@ public class HomeFragment extends Fragment {
 
         mAuth = FirebaseAuth.getInstance();
         databaseRef = FirebaseDatabase.getInstance().getReference("Users");
-
 
         cardView1.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -91,22 +98,16 @@ public class HomeFragment extends Fragment {
         welcomeText = view.findViewById(R.id.welcomeText);
         loadUserName();
 
-
         return view;
     }
 
     private void openStoryFragment(ArrayList<Integer> images) {
         if (images != null && !images.isEmpty()) {
-
-//            bottomNavigationView.setVisibility(View.VISIBLE);
-
             StoryFragment storyFragment = StoryFragment.newInstance(images);
             getParentFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, storyFragment)
                     .addToBackStack(null)
                     .commit();
-        } else {
-
         }
     }
 
@@ -153,34 +154,72 @@ public class HomeFragment extends Fragment {
 
         loadProfileImage();
     }
+
     private void loadProfileImage() {
         FirebaseUser user = mAuth.getCurrentUser();
         if (user != null) {
-            databaseRef.child(user.getUid()).child("profileImageBase64")
-                    .addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            if (snapshot.exists()) {
-                                String base64Image = snapshot.getValue(String.class);
-                                byte[] decodedBytes = Base64.decode(base64Image, Base64.DEFAULT);
-                                Bitmap decodedBitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
-                                smallProfileIcon.setImageBitmap(decodedBitmap);
-                            }
-                        }
+            String userId = user.getUid();
+            databaseRef.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.exists()) {
+                        String profileImageUrl = snapshot.child("profileImageUrl").getValue(String.class);
+                        String base64Image = snapshot.child("profileImageBase64").getValue(String.class);
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
-                            Toast.makeText(getContext(), "Failed to load profile icon", Toast.LENGTH_SHORT).show();
+                        if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
+                            Log.d(TAG, "Loading profile image from URL: " + profileImageUrl);
+                            Picasso.get()
+                                    .load(profileImageUrl)
+                                    .resize(100, 100)
+                                    .centerCrop()
+                                    .placeholder(R.drawable.ic_profile)
+                                    .error(R.drawable.ic_profile)
+                                    .into(smallProfileIcon, new Callback() {
+                                        @Override
+                                        public void onSuccess() {
+                                            Log.d(TAG, "Profile image loaded successfully in HomeFragment");
+                                        }
+
+                                        @Override
+                                        public void onError(Exception e) {
+                                            Log.e(TAG, "Failed to load profile image in HomeFragment: " + e.getMessage(), e);
+                                            loadBase64Image(base64Image);
+                                        }
+                                    });
+                        } else if (base64Image != null && !base64Image.isEmpty()) {
+                            loadBase64Image(base64Image);
+                        } else {
+                            smallProfileIcon.setImageResource(R.drawable.ic_profile);
+                            Log.w(TAG, "No profile image URL or Base64 found");
                         }
-                    });
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Toast.makeText(getContext(), "Failed to load profile icon", Toast.LENGTH_SHORT).show();
+                    smallProfileIcon.setImageResource(R.drawable.ic_profile);
+                }
+            });
         }
     }
 
+    private void loadBase64Image(String base64Image) {
+        try {
+            byte[] decodedBytes = Base64.decode(base64Image, Base64.DEFAULT);
+            Bitmap decodedBitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+            smallProfileIcon.setImageBitmap(decodedBitmap);
+            Log.d(TAG, "Profile image loaded from Base64");
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to decode Base64 image: " + e.getMessage(), e);
+            smallProfileIcon.setImageResource(R.drawable.ic_profile);
+            Toast.makeText(getContext(), "Failed to load profile icon from Base64", Toast.LENGTH_SHORT).show();
+        }
+    }
 
     @Override
     public void onPause() {
         super.onPause();
-
         if (bottomNavigationView != null) {
             bottomNavigationView.setVisibility(View.GONE);
         }
