@@ -1,3 +1,5 @@
+package com.example.hugo.bottomnavbar.Search;
+
 public class Dog {
     public String name;
     public String breed;

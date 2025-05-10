@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.hugo.R;
+import com.example.hugo.bottomnavbar.Search.Dog;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -188,34 +189,53 @@ public class ViewProfileFragment extends Fragment {
                     Log.w(TAG, "Skipping availability display: profileAvailability is null");
                 }
 
-                // Display dog info if available
-                if (user.dog != null) {
-                    dogInfoCard.setVisibility(View.VISIBLE);
-                    dogName.setText(user.dog.name != null ? user.dog.name : "No Name");
-                    dogBreed.setText(user.dog.breed != null ? user.dog.breed : "Unknown Breed");
-                    dogAge.setText(user.dog.age > 0 ? user.dog.age + " years" : "Unknown Age");
+                // Load dog data from Firebase
+                userRef.child("dogs").addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dogsSnapshot) {
+                        Dog dog = null;
+                        // Get the first dog (if any)
+                        for (DataSnapshot dogSnapshot : dogsSnapshot.getChildren()) {
+                            dog = dogSnapshot.getValue(Dog.class);
+                            break; // Take the first dog
+                        }
 
-                    if (user.dog.profileImageUrl != null && !user.dog.profileImageUrl.isEmpty()) {
-                        Picasso.get()
-                                .load(user.dog.profileImageUrl)
-                                .placeholder(R.drawable.ic_profile)
-                                .error(R.drawable.ic_profile)
-                                .into(dogImage, new com.squareup.picasso.Callback() {
-                                    @Override
-                                    public void onSuccess() {
-                                        Log.d(TAG, "Dog image loaded: " + user.dog.profileImageUrl);
-                                    }
-                                    @Override
-                                    public void onError(Exception e) {
-                                        Log.e(TAG, "Failed to load dog image: " + user.dog.profileImageUrl, e);
-                                    }
-                                });
-                    } else {
-                        dogImage.setImageResource(R.drawable.ic_profile);
+                        if (dog != null) {
+                            dogInfoCard.setVisibility(View.VISIBLE);
+                            dogName.setText(dog.name != null ? dog.name : "No Name");
+                            dogBreed.setText(dog.breed != null ? dog.breed : "Unknown Breed");
+                            dogAge.setText(dog.age > 0 ? dog.age + " years" : "Unknown Age");
+
+                            final String dogImageUrl = dog.profileImageUrl; // Local final variable
+                            if (dogImageUrl != null && !dogImageUrl.isEmpty()) {
+                                Picasso.get()
+                                        .load(dogImageUrl)
+                                        .placeholder(R.drawable.ic_profile)
+                                        .error(R.drawable.ic_profile)
+                                        .into(dogImage, new com.squareup.picasso.Callback() {
+                                            @Override
+                                            public void onSuccess() {
+                                                Log.d(TAG, "Dog image loaded: " + dogImageUrl);
+                                            }
+                                            @Override
+                                            public void onError(Exception e) {
+                                                Log.e(TAG, "Failed to load dog image: " + dogImageUrl, e);
+                                            }
+                                        });
+                            } else {
+                                dogImage.setImageResource(R.drawable.ic_profile);
+                            }
+                        } else {
+                            dogInfoCard.setVisibility(View.GONE);
+                        }
                     }
-                } else {
-                    dogInfoCard.setVisibility(View.GONE);
-                }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Log.e(TAG, "Failed to load dog data: " + error.getMessage());
+                        dogInfoCard.setVisibility(View.GONE);
+                    }
+                });
 
                 // Show/hide book button based on userType
                 if (user.userType != null && user.userType.equalsIgnoreCase("Dog Owner")) {

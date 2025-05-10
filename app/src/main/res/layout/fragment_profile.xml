@@ -1,170 +1,123 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:background="@color/milky">
+    android:background="@color/milky"
+    android:padding="16dp">
 
-    <!-- Profile Image -->
-    <com.google.android.material.imageview.ShapeableImageView
+    <ImageView
         android:id="@+id/profile_image"
         android:layout_width="100dp"
         android:layout_height="100dp"
-        android:layout_gravity="center"
-        android:src="@drawable/ic_profile"
-        android:clickable="true"
-        android:focusable="true"
-        android:contentDescription="Profile Image"
-        android:layout_marginBottom="16dp" />
 
-    <!-- Profile Name -->
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:src="@drawable/ic_profile" />
+
     <TextView
         android:id="@+id/profile_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="No Name"
-        android:textColor="@color/black"
+        android:text="Username"
         android:textSize="20sp"
-        android:fontFamily="@font/quicksand_bold"
-        android:layout_gravity="center"
-        android:layout_marginBottom="8dp" />
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/profile_image"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp" />
 
-    <!-- Profile Bio -->
     <TextView
         android:id="@+id/profile_bio"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="No bio"
-        android:textColor="@color/black"
-        android:textSize="16sp"
-        android:fontFamily="@font/quicksand_semibold"
-        android:layout_gravity="center"
-        android:layout_marginBottom="8dp" />
+        android:text="Bio goes here..."
+        app:layout_constraintTop_toBottomOf="@id/profile_name"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp" />
 
-    <!-- Profile Location -->
     <TextView
         android:id="@+id/profile_location"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="No location"
-        android:textColor="@color/black"
-        android:textSize="16sp"
-        android:fontFamily="@font/quicksand_semibold"
-        android:layout_gravity="center"
-        android:layout_marginBottom="16dp" />
+        android:text="Location"
+        app:layout_constraintTop_toBottomOf="@id/profile_bio"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp" />
 
-    <!-- Edit Profile Button -->
-    <Button
-        android:id="@+id/edit_profile_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Edit Profile"
-        android:backgroundTint="@color/darkblue"
-        android:textColor="@color/milky"
-        android:fontFamily="@font/quicksand_bold"
-        android:layout_gravity="center"
-        android:layout_marginBottom="16dp" />
-
-    <!-- Availability -->
     <TextView
         android:id="@+id/availability_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Availability: Not set"
-        android:textColor="@color/black"
-        android:textSize="16sp"
-        android:fontFamily="@font/quicksand_semibold"
         android:visibility="gone"
-        android:layout_marginBottom="16dp" />
+        app:layout_constraintTop_toBottomOf="@id/profile_location"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp" />
 
-    <!-- Dog Form -->
+    <Button
+        android:id="@+id/edit_profile_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Edit Profile"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:backgroundTint="@color/darkblue"
+        app:layout_constraintTop_toBottomOf="@id/availability_text" />
+
+    <!-- My Dogs Section -->
     <LinearLayout
-        android:id="@+id/dog_form_container"
+        android:id="@+id/my_dogs_section"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:visibility="gone">
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="8dp"
+        app:layout_constraintTop_toBottomOf="@id/edit_profile_button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp">
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/my_dogs_title"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:hint="Dog Name"
-            android:layout_marginBottom="8dp">
+            android:layout_weight="1"
+            android:text="My Dogs"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/dog_name_input"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/quicksand_semibold"
-                android:textColor="@color/black"
-                android:textSize="16sp" />
-        </com.google.android.material.textfield.TextInputLayout>
+        <ImageView
+            android:id="@+id/my_dogs_arrow"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Dog Birthday (MM/DD/YYYY)"
-            android:layout_marginBottom="8dp">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/dog_birthday_input"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/quicksand_semibold"
-                android:textColor="@color/black"
-                android:textSize="16sp"
-                android:focusable="false"
-                android:cursorVisible="false" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Dog Breed"
-            android:layout_marginBottom="8dp">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/dog_breed_input"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/quicksand_semibold"
-                android:textColor="@color/black"
-                android:textSize="16sp" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Special Care Instructions"
-            android:layout_marginBottom="8dp">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/dog_special_care_input"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/quicksand_semibold"
-                android:textColor="@color/black"
-                android:textSize="16sp" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <Button
-            android:id="@+id/dog_picture_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Select Dog Picture"
-            android:backgroundTint="@color/darkblue"
-            android:textColor="@color/milky"
-            android:fontFamily="@font/quicksand_bold"
-            android:layout_marginBottom="8dp" />
-
-        <Button
-            android:id="@+id/save_dog_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Save Dog Info"
-            android:backgroundTint="@color/darkblue"
-            android:textColor="@color/milky"
-            android:fontFamily="@font/quicksand_bold" />
+            android:src="@android:drawable/ic_media_next" />
     </LinearLayout>
-</LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/dog_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/my_dogs_section"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp" />
+
+    <ProgressBar
+        android:id="@+id/profile_loading_indicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
