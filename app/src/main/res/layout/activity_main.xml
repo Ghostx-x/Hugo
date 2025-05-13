@@ -30,4 +30,14 @@
         app:backgroundTint="@null"
         app:menu="@menu/bottom_nav_menu"/>
 
+    <ProgressBar
+        android:id="@+id/loading_indicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/fragment_container"
+        app:layout_constraintEnd_toEndOf="@id/fragment_container"
+        app:layout_constraintStart_toStartOf="@id/fragment_container"
+        app:layout_constraintTop_toTopOf="@id/fragment_container" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

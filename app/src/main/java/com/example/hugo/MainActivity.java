@@ -7,6 +7,7 @@ import android.widget.ProgressBar;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import com.example.hugo.bottomnavbar.Home.HomeFragment;
 import com.example.hugo.bottomnavbar.Home.StoryFragment;
@@ -33,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         bottomNavigationView = findViewById(R.id.bottom_navigation);
-
+        loadingIndicator = findViewById(R.id.loading_indicator);
 
         // Initialize fragments
         homeFragment = new HomeFragment();
@@ -42,11 +43,11 @@ public class MainActivity extends AppCompatActivity {
         profileFragment = new ProfileFragment();
 
         if (savedInstanceState == null) {
-            showLoadingIndicator();
+            Log.d(TAG, "Initial load: HomeFragment");
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, homeFragment)
                     .commit();
-            hideLoadingIndicator();
+            showBottomNavigationBar();
         }
 
         // Initialize Places in background
@@ -56,14 +57,11 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "Google Places initialized");
             } catch (Exception e) {
                 Log.e(TAG, "Failed to initialize Google Places: " + e.getMessage(), e);
-                runOnUiThread(() -> {
-                    // Optionally notify user or handle error
-                });
             }
         });
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
-            Fragment selectedFragment;
+            Fragment selectedFragment = null;
             int itemId = item.getItemId();
 
             showLoadingIndicator();
@@ -84,18 +82,28 @@ public class MainActivity extends AppCompatActivity {
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragment_container, selectedFragment)
                         .commit();
+                showBottomNavigationBar();
                 Log.d(TAG, "Navigated to fragment: " + selectedFragment.getClass().getSimpleName());
             } catch (Exception e) {
                 Log.e(TAG, "Fragment transaction failed: " + e.getMessage(), e);
-                runOnUiThread(() -> {
-                    // Handle transaction failure gracefully
-                    hideLoadingIndicator();
-                });
+                hideLoadingIndicator();
                 return false;
             }
 
             hideLoadingIndicator();
             return true;
+        });
+
+        // Ensure navigation bar visibility on back stack changes
+        getSupportFragmentManager().addOnBackStackChangedListener(() -> {
+            Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+            if (currentFragment instanceof HomeFragment ||
+                    currentFragment instanceof SearchFragment ||
+                    currentFragment instanceof LocationFragment ||
+                    currentFragment instanceof ProfileFragment) {
+                showBottomNavigationBar();
+                Log.d(TAG, "Back stack changed, showing bottom navigation");
+            }
         });
     }
 
@@ -129,17 +137,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void showLoadingIndicator() {
-        if (loadingIndicator != null) {
-            runOnUiThread(() -> loadingIndicator.setVisibility(View.VISIBLE));
-            Log.d(TAG, "Showing loading indicator");
-        }
+        runOnUiThread(() -> {
+            if (loadingIndicator != null) {
+                loadingIndicator.setVisibility(View.VISIBLE);
+                Log.d(TAG, "Showing loading indicator");
+            } else {
+                Log.e(TAG, "Loading indicator is null");
+            }
+        });
     }
 
     public void hideLoadingIndicator() {
-        if (loadingIndicator != null) {
-            runOnUiThread(() -> loadingIndicator.setVisibility(View.GONE));
-            Log.d(TAG, "Hiding loading indicator");
-        }
+        runOnUiThread(() -> {
+            if (loadingIndicator != null) {
+                loadingIndicator.setVisibility(View.GONE);
+                Log.d(TAG, "Hiding loading indicator");
+            } else {
+                Log.e(TAG, "Loading indicator is null");
+            }
+        });
     }
 
     @Override
