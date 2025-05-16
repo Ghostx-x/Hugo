@@ -37,7 +37,7 @@ public class TimeSlotAdapter extends RecyclerView.Adapter<TimeSlotAdapter.TimeSl
     @NonNull
     @Override
     public TimeSlotViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(android.R.layout.simple_list_item_1, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_time_slot, parent, false);
         return new TimeSlotViewHolder(view);
     }
 
@@ -51,6 +51,16 @@ public class TimeSlotAdapter extends RecyclerView.Adapter<TimeSlotAdapter.TimeSl
             notifyDataSetChanged();
             listener.onTimeSlotClick(timeSlot);
         });
+
+        Context context = holder.itemView.getContext();
+        if (position == selectedPosition) {
+            holder.itemView.setBackgroundResource(R.color.darkblue);
+            holder.textView.setTextColor(context.getResources().getColor(R.color.milky));
+        } else {
+            holder.itemView.setBackgroundResource(android.R.color.transparent);
+            holder.textView.setTextColor(context.getResources().getColor(R.color.black));
+        }
+
     }
 
     @Override
@@ -63,7 +73,7 @@ public class TimeSlotAdapter extends RecyclerView.Adapter<TimeSlotAdapter.TimeSl
 
         TimeSlotViewHolder(@NonNull View itemView) {
             super(itemView);
-            textView = itemView.findViewById(android.R.id.text1);
+            textView = itemView.findViewById(R.id.time_slot_text);
         }
     }
 }

@@ -63,7 +63,7 @@ public class ViewProfileFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         Log.d(TAG, "onViewCreated called");
 
-        // Initialize UI with try-catch to catch missing resources
+
         try {
             profileImage = view.findViewById(R.id.profile_image);
             profileName = view.findViewById(R.id.profile_name);
@@ -100,12 +100,12 @@ public class ViewProfileFragment extends Fragment {
             return;
         }
 
-        // Set up RecyclerView for reviews
+
         reviewsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         reviewAdapter = new ReviewAdapter(getContext(), new ArrayList<>());
         reviewsRecyclerView.setAdapter(reviewAdapter);
 
-        // Get user ID from arguments
+
         String userId = getArguments() != null ? getArguments().getString(ARG_USER_ID) : null;
         if (userId == null) {
             Log.w(TAG, "Invalid user ID");
@@ -114,11 +114,11 @@ public class ViewProfileFragment extends Fragment {
             return;
         }
 
-        // Fetch user data
+
         userRef = FirebaseDatabase.getInstance().getReference("Users").child(userId);
         loadUserData();
 
-        // Button click listeners
+
         chatButton.setOnClickListener(v -> {
             Toast.makeText(getContext(), "Chat with " + profileName.getText(), Toast.LENGTH_SHORT).show();
         });
@@ -144,7 +144,7 @@ public class ViewProfileFragment extends Fragment {
                     return;
                 }
 
-                // Display user info with null checks
+
                 profileName.setText(user.name != null ? user.name : "No Name");
                 profileBio.setText(user.bio != null ? user.bio : "No bio");
                 profileUserType.setText(user.userType != null ? user.userType : "Unknown");
@@ -169,7 +169,7 @@ public class ViewProfileFragment extends Fragment {
                     profileImage.setImageResource(R.drawable.ic_profile);
                 }
 
-                // Display availability for service providers
+
                 if (profileAvailability != null) {
                     if (isServiceProvider(user.userType) && user.availability != null && !user.availability.isEmpty()) {
                         StringBuilder availabilityString = new StringBuilder();
@@ -189,15 +189,14 @@ public class ViewProfileFragment extends Fragment {
                     Log.w(TAG, "Skipping availability display: profileAvailability is null");
                 }
 
-                // Load dog data from Firebase
                 userRef.child("dogs").addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dogsSnapshot) {
                         Dog dog = null;
-                        // Get the first dog (if any)
+
                         for (DataSnapshot dogSnapshot : dogsSnapshot.getChildren()) {
                             dog = dogSnapshot.getValue(Dog.class);
-                            break; // Take the first dog
+                            break;
                         }
 
                         if (dog != null) {
@@ -206,7 +205,7 @@ public class ViewProfileFragment extends Fragment {
                             dogBreed.setText(dog.breed != null ? dog.breed : "Unknown Breed");
                             dogAge.setText(dog.age > 0 ? dog.age + " years" : "Unknown Age");
 
-                            final String dogImageUrl = dog.profileImageUrl; // Local final variable
+                            final String dogImageUrl = dog.profileImageUrl;
                             if (dogImageUrl != null && !dogImageUrl.isEmpty()) {
                                 Picasso.get()
                                         .load(dogImageUrl)
@@ -237,14 +236,14 @@ public class ViewProfileFragment extends Fragment {
                     }
                 });
 
-                // Show/hide book button based on userType
+
                 if (user.userType != null && user.userType.equalsIgnoreCase("Dog Owner")) {
                     bookButton.setVisibility(View.GONE);
                 } else {
                     bookButton.setVisibility(View.VISIBLE);
                 }
 
-                // Load reviews
+
                 loadReviews();
             }
 

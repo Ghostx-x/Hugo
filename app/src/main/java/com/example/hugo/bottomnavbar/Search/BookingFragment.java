@@ -62,12 +62,12 @@ public class BookingFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         Log.d(TAG, "onViewCreated called");
 
-        // Initialize UI
+
         daySpinner = view.findViewById(R.id.day_spinner);
         timeSlotsRecyclerView = view.findViewById(R.id.time_slots_recycler_view);
         confirmBookingButton = view.findViewById(R.id.confirm_booking_button);
 
-        // Set up RecyclerView
+
         timeSlotsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         timeSlotAdapter = new TimeSlotAdapter(new ArrayList<>(), timeSlot -> {
             selectedTimeSlot = timeSlot;
@@ -75,7 +75,7 @@ public class BookingFragment extends Fragment {
         });
         timeSlotsRecyclerView.setAdapter(timeSlotAdapter);
 
-        // Get provider ID
+
         providerId = getArguments() != null ? getArguments().getString(ARG_PROVIDER_ID) : null;
         if (providerId == null) {
             Log.w(TAG, "Invalid provider ID");
@@ -84,11 +84,11 @@ public class BookingFragment extends Fragment {
             return;
         }
 
-        // Fetch provider availability
+
         providerRef = FirebaseDatabase.getInstance().getReference("Users").child(providerId);
         loadProviderAvailability();
 
-        // Confirm booking
+
         confirmBookingButton.setOnClickListener(v -> confirmBooking());
     }
 
@@ -113,19 +113,19 @@ public class BookingFragment extends Fragment {
                     return;
                 }
 
-                // Populate day spinner
+
                 ArrayAdapter<String> dayAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, days);
                 dayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 daySpinner.setAdapter(dayAdapter);
 
-                // Update time slots when day is selected
+
                 daySpinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
                     @Override
                     public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
                         selectedDay = days.get(position);
                         List<String> slots = availability.get(selectedDay);
                         timeSlotAdapter.updateTimeSlots(slots != null ? slots : new ArrayList<>());
-                        selectedTimeSlot = null; // Reset selection
+                        selectedTimeSlot = null;
                         Log.d(TAG, "Selected day: " + selectedDay);
                     }
 
@@ -166,24 +166,50 @@ public class BookingFragment extends Fragment {
         }
 
         String userId = user.getUid();
-        DatabaseReference bookingsRef = FirebaseDatabase.getInstance().getReference("Bookings").push();
-        Map<String, Object> booking = new HashMap<>();
-        booking.put("userId", userId);
-        booking.put("providerId", providerId);
-        booking.put("day", selectedDay);
-        booking.put("timeSlot", selectedTimeSlot);
-        booking.put("timestamp", System.currentTimeMillis());
-        booking.put("status", "pending");
+        // Fetch provider details to get name and photo URL
+        providerRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                User provider = snapshot.getValue(User.class);
+                if (provider == null) {
+                    Log.w(TAG, "Provider not found");
+                    Toast.makeText(getContext(), "Provider not found", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
-        bookingsRef.setValue(booking)
-                .addOnSuccessListener(aVoid -> {
-                    Log.d(TAG, "Booking confirmed: day=" + selectedDay + ", slot=" + selectedTimeSlot);
-                    Toast.makeText(getContext(), "Booking confirmed for " + selectedDay + " at " + selectedTimeSlot, Toast.LENGTH_SHORT).show();
-                    getParentFragmentManager().popBackStack();
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "Failed to confirm booking: " + e.getMessage());
-                    Toast.makeText(getContext(), "Failed to confirm booking: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+                // Format bookedTime as "Monday, 14:00-16:00"
+                String bookedTime = selectedDay + ", " + selectedTimeSlot;
+
+                // Save booking under Bookings/<user_uid>/<booking_id>
+                DatabaseReference bookingsRef = FirebaseDatabase.getInstance()
+                        .getReference("Bookings")
+                        .child(userId)
+                        .push();
+                Map<String, Object> booking = new HashMap<>();
+                booking.put("bookedUserId", providerId);
+                booking.put("bookedUserName", provider.name != null ? provider.name : "Unknown");
+                booking.put("bookedUserPhotoUrl", provider.profileImageUrl != null ? provider.profileImageUrl : "");
+                booking.put("bookedTime", bookedTime);
+                booking.put("timestamp", System.currentTimeMillis());
+                booking.put("status", "pending");
+
+                bookingsRef.setValue(booking)
+                        .addOnSuccessListener(aVoid -> {
+                            Log.d(TAG, "Booking confirmed: day=" + selectedDay + ", slot=" + selectedTimeSlot);
+                            Toast.makeText(getContext(), "Booking confirmed for " + bookedTime, Toast.LENGTH_SHORT).show();
+                            getParentFragmentManager().popBackStack();
+                        })
+                        .addOnFailureListener(e -> {
+                            Log.e(TAG, "Failed to confirm booking: " + e.getMessage());
+                            Toast.makeText(getContext(), "Failed to confirm booking: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        });
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e(TAG, "Failed to load provider data: " + error.getMessage());
+                Toast.makeText(getContext(), "Failed to load provider data", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

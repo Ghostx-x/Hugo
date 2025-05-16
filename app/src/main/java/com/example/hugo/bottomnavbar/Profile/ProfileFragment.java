@@ -29,6 +29,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.example.hugo.MainActivity;
 import com.example.hugo.R;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -54,6 +55,7 @@ public class ProfileFragment extends Fragment {
     private Button editProfileButton;
     private LinearLayout myDogsSection;
     private ActivityResultLauncher<Intent> profileImagePickerLauncher;
+    private BottomNavigationView bottomNavigationView;
     private final Handler handler = new Handler(Looper.getMainLooper());
 
     @Override
@@ -118,6 +120,19 @@ public class ProfileFragment extends Fragment {
         availabilityText = view.findViewById(R.id.availability_text);
         editProfileButton = view.findViewById(R.id.edit_profile_button);
         myDogsSection = view.findViewById(R.id.my_dogs_section);
+
+
+        bottomNavigationView = getActivity().findViewById(R.id.bottom_navigation);
+        bottomNavigationView.setVisibility(View.VISIBLE);
+
+        LinearLayout myBookingsSection = view.findViewById(R.id.my_bookings_section);
+        myBookingsSection.setOnClickListener(v -> {
+            getParentFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, new MyBookingsFragment())
+                    .addToBackStack(null)
+                    .commit();
+        });
+
 
         if (profileImage != null) {
             profileImage.setOnClickListener(v -> {
