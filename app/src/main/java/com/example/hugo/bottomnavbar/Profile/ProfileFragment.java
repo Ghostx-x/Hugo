@@ -53,7 +53,7 @@ public class ProfileFragment extends Fragment {
     private ShapeableImageView profileImage;
     private TextView profileName, profileBio, profileLocation, availabilityText;
     private Button editProfileButton;
-    private LinearLayout myDogsSection;
+    private LinearLayout myDogsSection, myBookingsSection, myOrdersSection;
     private ActivityResultLauncher<Intent> profileImagePickerLauncher;
     private BottomNavigationView bottomNavigationView;
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -120,12 +120,12 @@ public class ProfileFragment extends Fragment {
         availabilityText = view.findViewById(R.id.availability_text);
         editProfileButton = view.findViewById(R.id.edit_profile_button);
         myDogsSection = view.findViewById(R.id.my_dogs_section);
-
+        myBookingsSection = view.findViewById(R.id.my_bookings_section);
+        myOrdersSection = view.findViewById(R.id.my_orders_section);
 
         bottomNavigationView = getActivity().findViewById(R.id.bottom_navigation);
         bottomNavigationView.setVisibility(View.VISIBLE);
 
-        LinearLayout myBookingsSection = view.findViewById(R.id.my_bookings_section);
         myBookingsSection.setOnClickListener(v -> {
             getParentFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, new MyBookingsFragment())
@@ -133,6 +133,12 @@ public class ProfileFragment extends Fragment {
                     .commit();
         });
 
+        myOrdersSection.setOnClickListener(v -> {
+            getParentFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, new MyOrdersFragment())
+                    .addToBackStack(null)
+                    .commit();
+        });
 
         if (profileImage != null) {
             profileImage.setOnClickListener(v -> {
@@ -253,6 +259,15 @@ public class ProfileFragment extends Fragment {
                             Log.w(TAG, "Profile image Base64 is null or empty");
                             profileImage.setImageResource(R.drawable.ic_profile);
                         }
+                    }
+                    // Show My Orders section for service providers
+                    if (myOrdersSection != null && userType != null &&
+                            (userType.equalsIgnoreCase("Dog Walker") ||
+                                    userType.equalsIgnoreCase("Trainer") ||
+                                    userType.equalsIgnoreCase("Veterinarian"))) {
+                        myOrdersSection.setVisibility(View.VISIBLE);
+                    } else {
+                        myOrdersSection.setVisibility(View.GONE);
                     }
                 } catch (Exception e) {
                     Log.e(TAG, "Failed to load user profile: " + e.getMessage(), e);

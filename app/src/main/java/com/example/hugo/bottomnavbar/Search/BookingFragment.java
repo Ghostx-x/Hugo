@@ -62,11 +62,9 @@ public class BookingFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         Log.d(TAG, "onViewCreated called");
 
-
         daySpinner = view.findViewById(R.id.day_spinner);
         timeSlotsRecyclerView = view.findViewById(R.id.time_slots_recycler_view);
         confirmBookingButton = view.findViewById(R.id.confirm_booking_button);
-
 
         timeSlotsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         timeSlotAdapter = new TimeSlotAdapter(new ArrayList<>(), timeSlot -> {
@@ -74,7 +72,6 @@ public class BookingFragment extends Fragment {
             Log.d(TAG, "Selected time slot: " + timeSlot);
         });
         timeSlotsRecyclerView.setAdapter(timeSlotAdapter);
-
 
         providerId = getArguments() != null ? getArguments().getString(ARG_PROVIDER_ID) : null;
         if (providerId == null) {
@@ -84,10 +81,8 @@ public class BookingFragment extends Fragment {
             return;
         }
 
-
         providerRef = FirebaseDatabase.getInstance().getReference("Users").child(providerId);
         loadProviderAvailability();
-
 
         confirmBookingButton.setOnClickListener(v -> confirmBooking());
     }
@@ -113,11 +108,9 @@ public class BookingFragment extends Fragment {
                     return;
                 }
 
-
                 ArrayAdapter<String> dayAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, days);
                 dayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 daySpinner.setAdapter(dayAdapter);
-
 
                 daySpinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
                     @Override
@@ -136,7 +129,6 @@ public class BookingFragment extends Fragment {
                     }
                 });
 
-                // Select first day by default
                 if (!days.isEmpty()) {
                     daySpinner.setSelection(0);
                 }
@@ -166,49 +158,85 @@ public class BookingFragment extends Fragment {
         }
 
         String userId = user.getUid();
-        // Fetch provider details to get name and photo URL
-        providerRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(userId);
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                User provider = snapshot.getValue(User.class);
-                if (provider == null) {
-                    Log.w(TAG, "Provider not found");
-                    Toast.makeText(getContext(), "Provider not found", Toast.LENGTH_SHORT).show();
+            public void onDataChange(@NonNull DataSnapshot userSnapshot) {
+                User currentUser = userSnapshot.getValue(User.class);
+                if (currentUser == null) {
+                    Log.w(TAG, "Current user not found");
+                    Toast.makeText(getContext(), "User data not found", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                // Format bookedTime as "Monday, 14:00-16:00"
-                String bookedTime = selectedDay + ", " + selectedTimeSlot;
+                providerRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot providerSnapshot) {
+                        User provider = providerSnapshot.getValue(User.class);
+                        if (provider == null) {
+                            Log.w(TAG, "Provider not found");
+                            Toast.makeText(getContext(), "Provider not found", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
 
-                // Save booking under Bookings/<user_uid>/<booking_id>
-                DatabaseReference bookingsRef = FirebaseDatabase.getInstance()
-                        .getReference("Bookings")
-                        .child(userId)
-                        .push();
-                Map<String, Object> booking = new HashMap<>();
-                booking.put("bookedUserId", providerId);
-                booking.put("bookedUserName", provider.name != null ? provider.name : "Unknown");
-                booking.put("bookedUserPhotoUrl", provider.profileImageUrl != null ? provider.profileImageUrl : "");
-                booking.put("bookedTime", bookedTime);
-                booking.put("timestamp", System.currentTimeMillis());
-                booking.put("status", "pending");
+                        String bookedTime = selectedDay + ", " + selectedTimeSlot;
 
-                bookingsRef.setValue(booking)
-                        .addOnSuccessListener(aVoid -> {
-                            Log.d(TAG, "Booking confirmed: day=" + selectedDay + ", slot=" + selectedTimeSlot);
-                            Toast.makeText(getContext(), "Booking confirmed for " + bookedTime, Toast.LENGTH_SHORT).show();
-                            getParentFragmentManager().popBackStack();
-                        })
-                        .addOnFailureListener(e -> {
-                            Log.e(TAG, "Failed to confirm booking: " + e.getMessage());
-                            Toast.makeText(getContext(), "Failed to confirm booking: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                        });
+                        DatabaseReference bookingsRef = FirebaseDatabase.getInstance()
+                                .getReference("Bookings")
+                                .child(userId)
+                                .push();
+                        String bookingId = bookingsRef.getKey();
+                        Map<String, Object> booking = new HashMap<>();
+                        booking.put("bookedUserId", providerId);
+                        booking.put("bookedUserName", provider.name != null ? provider.name : "Unknown");
+                        booking.put("bookedUserPhotoUrl", provider.profileImageUrl != null ? provider.profileImageUrl : "");
+                        booking.put("bookedTime", bookedTime);
+                        booking.put("timestamp", System.currentTimeMillis());
+                        booking.put("status", "pending");
+
+                        DatabaseReference notificationsRef = FirebaseDatabase.getInstance()
+                                .getReference("Notifications")
+                                .child(providerId)
+                                .push();
+                        Map<String, Object> notification = new HashMap<>();
+                        notification.put("bookingId", bookingId);
+                        notification.put("userId", userId);
+                        notification.put("userName", currentUser.name != null ? currentUser.name : "Unknown");
+                        notification.put("bookedTime", bookedTime);
+                        notification.put("timestamp", System.currentTimeMillis());
+                        notification.put("status", "pending");
+
+                        bookingsRef.setValue(booking)
+                                .addOnSuccessListener(aVoid -> {
+                                    notificationsRef.setValue(notification)
+                                            .addOnSuccessListener(aVoid2 -> {
+                                                Log.d(TAG, "Booking and notification saved: day=" + selectedDay + ", slot=" + selectedTimeSlot);
+                                                Toast.makeText(getContext(), "Booking confirmed for " + bookedTime, Toast.LENGTH_SHORT).show();
+                                                getParentFragmentManager().popBackStack();
+                                            })
+                                            .addOnFailureListener(e -> {
+                                                Log.e(TAG, "Failed to save notification: " + e.getMessage());
+                                                Toast.makeText(getContext(), "Failed to send notification", Toast.LENGTH_SHORT).show();
+                                            });
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.e(TAG, "Failed to save booking: " + e.getMessage());
+                                    Toast.makeText(getContext(), "Failed to confirm booking", Toast.LENGTH_SHORT).show();
+                                });
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Log.e(TAG, "Failed to load provider data: " + error.getMessage());
+                        Toast.makeText(getContext(), "Failed to load provider data", Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Log.e(TAG, "Failed to load provider data: " + error.getMessage());
-                Toast.makeText(getContext(), "Failed to load provider data", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "Failed to load user data: " + error.getMessage());
+                Toast.makeText(getContext(), "Failed to load user data", Toast.LENGTH_SHORT).show();
             }
         });
     }

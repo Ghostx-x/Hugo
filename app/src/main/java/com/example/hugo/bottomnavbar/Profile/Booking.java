@@ -5,12 +5,14 @@ public class Booking {
     public String bookedUserName;
     public String bookedUserPhotoUrl;
     public String bookedTime;
+    public String status;
 
-    public Booking(String bookedUserId, String bookedUserName, String bookedUserPhotoUrl, String bookedTime) {
+    public Booking(String bookedUserId, String bookedUserName, String bookedUserPhotoUrl, String bookedTime, String status) {
         this.bookedUserId = bookedUserId;
         this.bookedUserName = bookedUserName;
         this.bookedUserPhotoUrl = bookedUserPhotoUrl;
         this.bookedTime = bookedTime;
+        this.status = status;
     }
 
     public String getBookedUserId() {
@@ -29,6 +31,10 @@ public class Booking {
         return bookedTime;
     }
 
+    public String getStatus() {
+        return status;
+    }
+
     public void setBookedUserId(String bookedUserId) {
         this.bookedUserId = bookedUserId;
     }
@@ -44,5 +50,8 @@ public class Booking {
     public void setBookedTime(String bookedTime) {
         this.bookedTime = bookedTime;
     }
-}
 
+    public void setStatus(String status) {
+        this.status = status;
+    }
+}

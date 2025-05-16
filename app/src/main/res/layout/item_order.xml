@@ -16,22 +16,23 @@
         android:layout_marginEnd="12dp" />
 
     <LinearLayout
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:backgroundTint="@color/milky"
+        android:padding="16dp">
 
         <TextView
             android:id="@+id/user_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Sophie Carpenter"
             android:textColor="@color/black"
+            android:text="Sophie Carpenter"
             android:textSize="16sp"
             android:fontFamily="@font/quicksand_bold" />
 
         <TextView
-            android:id="@+id/booking_status"
+            android:id="@+id/order_status"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/black"
@@ -40,7 +41,7 @@
             android:textSize="14sp" />
 
         <TextView
-            android:id="@+id/booking_time"
+            android:id="@+id/booked_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Booked for: 14 May, 10:00 AM"
@@ -49,13 +50,32 @@
             android:textSize="14sp" />
 
 
-    </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
 
-    <Button
-        android:id="@+id/view_details_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:backgroundTint="@color/darkblue"
-        android:text="View Details"
-        android:textColor="@color/milky" />
+            <Button
+                android:id="@+id/accept_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Accept"
+                android:backgroundTint="@color/darkblue"
+                android:textColor="@color/milky"
+                android:fontFamily="@font/quicksand_bold"
+                android:layout_marginRight="20dp"
+                android:layout_weight="1" />
+
+            <Button
+                android:id="@+id/decline_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/darkblue"
+                android:text="Decline"
+                android:textColor="@color/milky"
+                android:fontFamily="@font/quicksand_bold"
+                android:layout_weight="1" />
+        </LinearLayout>
+    </LinearLayout>
 </LinearLayout>

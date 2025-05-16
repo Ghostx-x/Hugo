@@ -1,16 +1,15 @@
 package com.example.hugo.bottomnavbar.Profile;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
@@ -18,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.hugo.R;
 import com.example.hugo.bottomnavbar.Search.ViewProfileFragment;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -43,18 +43,28 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
         Booking booking = bookings.get(position);
         holder.userName.setText(booking.bookedUserName);
         holder.bookingTime.setText("Booked for: " + booking.bookedTime);
+        holder.status.setText("Status: " + booking.status);
 
-        Bitmap bitmap = decodeBase64ToBitmap(booking.bookedUserPhotoUrl);
-        if (bitmap != null) {
-            holder.userImage.setImageBitmap(bitmap);
+        if (booking.bookedUserPhotoUrl != null && !booking.bookedUserPhotoUrl.isEmpty()) {
+            Picasso.get()
+                    .load(booking.bookedUserPhotoUrl)
+                    .placeholder(R.drawable.ic_profile)
+                    .error(R.drawable.ic_profile)
+                    .into(holder.userImage);
         } else {
             holder.userImage.setImageResource(R.drawable.ic_profile);
         }
 
         holder.viewDetailsButton.setOnClickListener(v -> {
+            Log.d("BookingAdapter", "View Details clicked, bookedUserId: " + booking.bookedUserId);
+            if (booking.bookedUserId == null || booking.bookedUserId.isEmpty()) {
+                Log.w("BookingAdapter", "Invalid bookedUserId");
+                Toast.makeText(context, "Cannot view profile: Invalid user ID", Toast.LENGTH_SHORT).show();
+                return;
+            }
             ViewProfileFragment viewProfileFragment = new ViewProfileFragment();
             Bundle args = new Bundle();
-            args.putString("userId", booking.bookedUserId);
+            args.putString("user_id", booking.bookedUserId); // Fixed to match ARG_USER_ID
             viewProfileFragment.setArguments(args);
             FragmentActivity activity = (FragmentActivity) context;
             activity.getSupportFragmentManager().beginTransaction()
@@ -69,18 +79,9 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
         return bookings.size();
     }
 
-    private Bitmap decodeBase64ToBitmap(String base64String) {
-        try {
-            byte[] decodedBytes = Base64.decode(base64String, Base64.DEFAULT);
-            return BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
     class BookingViewHolder extends RecyclerView.ViewHolder {
         ImageView userImage;
-        TextView userName, bookingTime;
+        TextView userName, bookingTime, status;
         Button viewDetailsButton;
 
         BookingViewHolder(View itemView) {
@@ -88,6 +89,7 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
             userImage = itemView.findViewById(R.id.user_image);
             userName = itemView.findViewById(R.id.user_name);
             bookingTime = itemView.findViewById(R.id.booking_time);
+            status = itemView.findViewById(R.id.booking_status);
             viewDetailsButton = itemView.findViewById(R.id.view_details_button);
         }
     }

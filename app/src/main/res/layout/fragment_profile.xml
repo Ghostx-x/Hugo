@@ -60,6 +60,9 @@
         android:layout_height="wrap_content"
         android:text="Availability: Not set"
         android:visibility="gone"
+        android:textColor="@color/black"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
         app:layout_constraintTop_toBottomOf="@id/profile_location"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -77,7 +80,6 @@
         android:backgroundTint="@color/darkblue"
         app:layout_constraintTop_toBottomOf="@id/availability_text" />
 
-    <!-- My Dogs Section -->
     <LinearLayout
         android:id="@+id/my_dogs_section"
         android:layout_width="match_parent"
@@ -106,6 +108,15 @@
             android:layout_height="24dp"
             android:src="@drawable/arrow_next" />
     </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/dog_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/my_dogs_section"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp" />
 
     <LinearLayout
         android:id="@+id/my_bookings_section"
@@ -136,14 +147,36 @@
             android:src="@drawable/arrow_next" />
     </LinearLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/dog_recycler_view"
+    <LinearLayout
+        android:id="@+id/my_orders_section"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/my_dogs_section"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="8dp"
+        android:background="?attr/selectableItemBackground"
+        app:layout_constraintTop_toBottomOf="@id/my_bookings_section"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp" />
+        android:layout_marginTop="20dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/my_orders_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="My Orders"
+            android:textSize="18sp"
+            android:textColor="@color/black"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/my_orders_arrow"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/arrow_next" />
+    </LinearLayout>
 
     <ProgressBar
         android:id="@+id/profile_loading_indicator"

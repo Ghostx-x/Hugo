@@ -11,7 +11,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
-
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.hugo.R;
@@ -38,22 +37,17 @@ public class MyBookingsFragment extends Fragment {
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_my_bookings, container, false);
-
-
         bookingsRecyclerView = view.findViewById(R.id.bookings_recycler_view);
         bookingsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         bookingList = new ArrayList<>();
         adapter = new BookingAdapter(bookingList, getContext());
         bookingsRecyclerView.setAdapter(adapter);
 
-
         ImageView backArrow = view.findViewById(R.id.back_arrow);
         backArrow.setOnClickListener(v -> {
-
             if (getParentFragmentManager().getBackStackEntryCount() > 0) {
                 getParentFragmentManager().popBackStack();
             } else {
-
                 getParentFragmentManager().beginTransaction()
                         .replace(R.id.fragment_container, new ProfileFragment())
                         .commit();
@@ -73,7 +67,7 @@ public class MyBookingsFragment extends Fragment {
         DatabaseReference bookingsRef = FirebaseDatabase.getInstance()
                 .getReference("Bookings")
                 .child(user.getUid());
-        bookingsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        bookingsRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 bookingList.clear();
@@ -82,8 +76,9 @@ public class MyBookingsFragment extends Fragment {
                     String userName = bookingSnapshot.child("bookedUserName").getValue(String.class);
                     String photoUrl = bookingSnapshot.child("bookedUserPhotoUrl").getValue(String.class);
                     String bookedTime = bookingSnapshot.child("bookedTime").getValue(String.class);
-                    if (userId != null && userName != null && bookedTime != null) {
-                        bookingList.add(new Booking(userId, userName, photoUrl != null ? photoUrl : "", bookedTime));
+                    String status = bookingSnapshot.child("status").getValue(String.class);
+                    if (userId != null && userName != null && bookedTime != null && status != null) {
+                        bookingList.add(new Booking(userId, userName, photoUrl != null ? photoUrl : "", bookedTime, status));
                     }
                 }
                 adapter.notifyDataSetChanged();
