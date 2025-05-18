@@ -2,6 +2,7 @@ package com.example.hugo.bottomnavbar.Profile;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -10,7 +11,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.MediaStore;
 import android.util.Base64;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +23,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -55,17 +56,21 @@ public class ProfileFragment extends Fragment {
     private Button editProfileButton;
     private LinearLayout myDogsSection, myBookingsSection, myOrdersSection;
     private ActivityResultLauncher<Intent> profileImagePickerLauncher;
+    private ActivityResultLauncher<Intent> locationPickerLauncher;
+    private ActivityResultLauncher<String[]> permissionLauncher;
     private BottomNavigationView bottomNavigationView;
     private final Handler handler = new Handler(Looper.getMainLooper());
+    private String currentUsername, currentBio, currentLocationName, userType;
+    private double currentLatitude, currentLongitude;
+    private Map<String, List<String>> currentAvailability;
+    private EditProfileDialog currentDialog;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(TAG, "onCreate started");
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser user = mAuth.getCurrentUser();
         if (user == null) {
-            Log.w(TAG, "No authenticated user in onCreate");
             Toast.makeText(getContext(), "Please sign in", Toast.LENGTH_SHORT).show();
             if (getActivity() != null) {
                 getActivity().finish();
@@ -86,33 +91,52 @@ public class ProfileFragment extends Fragment {
                     }
                     String base64Image = bitmapToBase64(bitmap);
                     databaseRef.child("profileImageBase64").setValue(base64Image)
-                            .addOnSuccessListener(aVoid -> {
-                                Log.d(TAG, "Profile image saved as Base64");
-                                Toast.makeText(getContext(), "Profile image updated", Toast.LENGTH_SHORT).show();
-                            })
-                            .addOnFailureListener(e -> {
-                                Log.e(TAG, "Failed to save profile image: " + e.getMessage(), e);
-                                Toast.makeText(getContext(), "Failed to save image", Toast.LENGTH_SHORT).show();
-                            });
+                            .addOnSuccessListener(aVoid -> Toast.makeText(getContext(), "Profile image updated", Toast.LENGTH_SHORT).show())
+                            .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to save image", Toast.LENGTH_SHORT).show());
                 } catch (Exception e) {
-                    Log.e(TAG, "Failed to load profile image: " + e.getMessage(), e);
                     Toast.makeText(getContext(), "Failed to load image", Toast.LENGTH_SHORT).show();
                 }
+            }
+        });
+
+        locationPickerLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                Intent data = result.getData();
+                double latitude = data.getDoubleExtra("latitude", 0.0);
+                double longitude = data.getDoubleExtra("longitude", 0.0);
+                String locationName = data.getStringExtra("locationName");
+                currentLatitude = latitude;
+                currentLongitude = longitude;
+                currentLocationName = locationName;
+                if (currentDialog != null) {
+                    currentDialog.updateLocation(latitude, longitude);
+                }
+                if (profileLocation != null) {
+                    profileLocation.setText(currentLocationName);
+                }
+            }
+        });
+
+        permissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
+            Boolean fineLocationGranted = result.getOrDefault(android.Manifest.permission.ACCESS_FINE_LOCATION, false);
+            Boolean coarseLocationGranted = result.getOrDefault(android.Manifest.permission.ACCESS_COARSE_LOCATION, false);
+            if (fineLocationGranted || coarseLocationGranted) {
+                Intent intent = new Intent(requireContext(), MapLocationActivity.class);
+                locationPickerLauncher.launch(intent);
+            } else {
+                Toast.makeText(getContext(), "Location permission denied", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        Log.d(TAG, "onCreateView started");
         return inflater.inflate(R.layout.fragment_profile, container, false);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        Log.d(TAG, "onViewCreated started");
-
         profileImage = view.findViewById(R.id.profile_image);
         profileName = view.findViewById(R.id.profile_name);
         profileBio = view.findViewById(R.id.profile_bio);
@@ -144,39 +168,30 @@ public class ProfileFragment extends Fragment {
             profileImage.setOnClickListener(v -> {
                 Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                 profileImagePickerLauncher.launch(intent);
-                Log.d(TAG, "Profile image clicked");
             });
         }
 
         if (editProfileButton != null) {
-            editProfileButton.setOnClickListener(v -> {
-                Log.d(TAG, "Edit profile button clicked");
-                Toast.makeText(getContext(), "Edit profile not implemented", Toast.LENGTH_SHORT).show();
-            });
+            editProfileButton.setOnClickListener(v -> showEditProfileDialog());
         }
 
         if (myDogsSection != null) {
             myDogsSection.setOnClickListener(v -> {
-                Log.d(TAG, "My Dogs section clicked");
                 if (getActivity() == null) {
-                    Log.e(TAG, "Activity is null, cannot navigate to DogFragment");
                     Toast.makeText(getContext(), "Navigation error: Activity not found", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 if (!isAdded() || isDetached()) {
-                    Log.e(TAG, "Fragment is not attached or is detached, cannot navigate");
                     Toast.makeText(getContext(), "Navigation error: Fragment not attached", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 try {
-                    Log.d(TAG, "Attempting to navigate to DogFragment");
                     if (getActivity() instanceof MainActivity) {
                         ((MainActivity) getActivity()).showLoadingIndicator();
                         ((MainActivity) getActivity()).hideBottomNavigationBar();
                     }
                     FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
                     if (fragmentManager.isStateSaved()) {
-                        Log.e(TAG, "FragmentManager state is saved, cannot commit transaction");
                         Toast.makeText(getContext(), "Cannot navigate: App state is saved", Toast.LENGTH_SHORT).show();
                         return;
                     }
@@ -185,9 +200,7 @@ public class ProfileFragment extends Fragment {
                     transaction.replace(R.id.fragment_container, dogFragment);
                     transaction.addToBackStack("DogFragment");
                     transaction.commit();
-                    Log.d(TAG, "Fragment transaction committed for DogFragment");
                 } catch (Exception e) {
-                    Log.e(TAG, "Failed to navigate to DogFragment: " + e.getMessage(), e);
                     Toast.makeText(getContext(), "Error navigating to My Dogs: " + e.getMessage(), Toast.LENGTH_LONG).show();
                     if (getActivity() instanceof MainActivity) {
                         ((MainActivity) getActivity()).hideLoadingIndicator();
@@ -196,7 +209,6 @@ public class ProfileFragment extends Fragment {
                     handler.postDelayed(() -> {
                         if (getActivity() instanceof MainActivity && getActivity() != null) {
                             ((MainActivity) getActivity()).hideLoadingIndicator();
-                            Log.d(TAG, "Loading indicator hidden");
                         }
                     }, 3000);
                 }
@@ -206,9 +218,69 @@ public class ProfileFragment extends Fragment {
         loadUserProfile();
     }
 
+    private void showEditProfileDialog() {
+        if (currentUsername == null) currentUsername = profileName != null ? profileName.getText().toString() : "";
+        if (currentBio == null) currentBio = profileBio != null ? profileBio.getText().toString() : "";
+        if (currentLocationName == null) currentLocationName = profileLocation != null ? profileLocation.getText().toString() : "";
+        if (currentAvailability == null) currentAvailability = new HashMap<>();
+        if (userType == null) userType = "Dog Owner";
+
+        EditProfileDialog.OnProfileUpdateListener updateListener = (username, bio, locationName, latitude, longitude, availability) -> {
+            this.currentUsername = username;
+            this.currentBio = bio;
+            this.currentLocationName = locationName;
+            this.currentLatitude = latitude;
+            this.currentLongitude = longitude;
+            this.currentAvailability = availability;
+            if (profileName != null) {
+                profileName.setText(username);
+            }
+            if (profileBio != null) {
+                profileBio.setText(bio);
+            }
+            if (profileLocation != null) {
+                profileLocation.setText(locationName);
+            }
+            if (availabilityText != null) {
+                if (availability != null && !availability.isEmpty()) {
+                    availabilityText.setText("Availability: " + availability.toString());
+                    availabilityText.setVisibility(View.VISIBLE);
+                } else {
+                    availabilityText.setVisibility(View.GONE);
+                }
+            }
+        };
+
+        EditProfileDialog.OnSelectLocationListener selectLocationListener = () -> {
+            if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+                    ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                Intent intent = new Intent(requireContext(), MapLocationActivity.class);
+                locationPickerLauncher.launch(intent);
+            } else {
+                permissionLauncher.launch(new String[]{
+                        android.Manifest.permission.ACCESS_FINE_LOCATION,
+                        android.Manifest.permission.ACCESS_COARSE_LOCATION
+                });
+            }
+        };
+
+        currentDialog = new EditProfileDialog(
+                requireContext(),
+                currentUsername,
+                currentBio,
+                currentLocationName,
+                currentLatitude,
+                currentLongitude,
+                userType,
+                currentAvailability,
+                updateListener,
+                selectLocationListener
+        );
+        currentDialog.show();
+    }
+
     private void loadUserProfile() {
         if (databaseRef == null) {
-            Log.e(TAG, "Database reference is null, cannot load profile");
             return;
         }
         databaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -222,24 +294,30 @@ public class ProfileFragment extends Fragment {
                     GenericTypeIndicator<Map<String, List<String>>> availabilityType =
                             new GenericTypeIndicator<Map<String, List<String>>>() {};
                     Map<String, List<String>> availability = snapshot.child("availability").getValue(availabilityType);
-                    String userType = snapshot.child("userType").getValue(String.class);
+                    String userTypeFromDB = snapshot.child("userType").getValue(String.class);
+                    Double latitude = snapshot.child("latitude").getValue(Double.class);
+                    Double longitude = snapshot.child("longitude").getValue(Double.class);
 
-                    Log.d(TAG, "User profile loaded: username=" + username + ", bio=" + bio +
-                            ", location=" + location + ", availability=" + availability +
-                            ", userType=" + userType);
+                    currentUsername = username != null ? username : "Unknown";
+                    currentBio = bio != null ? bio : "No bio set";
+                    currentLocationName = location != null ? location : "No location set";
+                    currentAvailability = availability != null ? availability : new HashMap<>();
+                    userType = userTypeFromDB != null ? userTypeFromDB : "Dog Owner";
+                    currentLatitude = latitude != null ? latitude : 0.0;
+                    currentLongitude = longitude != null ? longitude : 0.0;
 
                     if (profileName != null) {
-                        profileName.setText(username != null ? username : "Unknown");
+                        profileName.setText(currentUsername);
                     }
                     if (profileBio != null) {
-                        profileBio.setText(bio != null ? bio : "No bio set");
+                        profileBio.setText(currentBio);
                     }
                     if (profileLocation != null) {
-                        profileLocation.setText(location != null ? location : "No location set");
+                        profileLocation.setText(currentLocationName);
                     }
                     if (availabilityText != null) {
-                        if (availability != null && !availability.isEmpty()) {
-                            availabilityText.setText("Availability: " + availability.toString());
+                        if (currentAvailability != null && !currentAvailability.isEmpty()) {
+                            availabilityText.setText("Availability: " + currentAvailability.toString());
                             availabilityText.setVisibility(View.VISIBLE);
                         } else {
                             availabilityText.setVisibility(View.GONE);
@@ -247,20 +325,16 @@ public class ProfileFragment extends Fragment {
                     }
                     if (profileImage != null) {
                         if (base64Image != null && !base64Image.isEmpty()) {
-                            Log.d(TAG, "Loading profile image from Base64");
                             Bitmap bitmap = base64ToBitmap(base64Image);
                             if (bitmap != null) {
                                 profileImage.setImageBitmap(bitmap);
                             } else {
-                                Log.w(TAG, "Failed to decode Base64 to Bitmap");
                                 profileImage.setImageResource(R.drawable.ic_profile);
                             }
                         } else {
-                            Log.w(TAG, "Profile image Base64 is null or empty");
                             profileImage.setImageResource(R.drawable.ic_profile);
                         }
                     }
-                    // Show My Orders section for service providers
                     if (myOrdersSection != null && userType != null &&
                             (userType.equalsIgnoreCase("Dog Walker") ||
                                     userType.equalsIgnoreCase("Trainer") ||
@@ -270,14 +344,12 @@ public class ProfileFragment extends Fragment {
                         myOrdersSection.setVisibility(View.GONE);
                     }
                 } catch (Exception e) {
-                    Log.e(TAG, "Failed to load user profile: " + e.getMessage(), e);
                     Toast.makeText(getContext(), "Failed to load profile", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Log.e(TAG, "Database error: " + error.getMessage(), error.toException());
                 Toast.makeText(getContext(), "Database error", Toast.LENGTH_SHORT).show();
             }
         });
@@ -295,7 +367,6 @@ public class ProfileFragment extends Fragment {
             byte[] decodedBytes = Base64.decode(base64Str, Base64.DEFAULT);
             return BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
         } catch (Exception e) {
-            Log.e(TAG, "Failed to decode Base64 to Bitmap: " + e.getMessage(), e);
             return null;
         }
     }
@@ -308,16 +379,15 @@ public class ProfileFragment extends Fragment {
         userData.put("latitude", latitude);
         userData.put("longitude", longitude);
         userData.put("availability", availability);
-        userData.put("userType", "Dog Owner");
+        userData.put("userType", userType);
         databaseRef.updateChildren(userData)
-                .addOnSuccessListener(aVoid -> Log.d(TAG, "User profile saved successfully"))
-                .addOnFailureListener(e -> Log.e(TAG, "Failed to save user profile: " + e.getMessage(), e));
+                .addOnSuccessListener(aVoid -> {})
+                .addOnFailureListener(e -> {});
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         handler.removeCallbacksAndMessages(null);
-        Log.d(TAG, "onDestroyView called");
     }
 }

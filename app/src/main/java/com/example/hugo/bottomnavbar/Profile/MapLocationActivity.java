@@ -3,6 +3,8 @@ package com.example.hugo.bottomnavbar.Profile;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
@@ -26,6 +28,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
+
 public class MapLocationActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMarkerDragListener {
 
     private static final String TAG = "MapLocationActivity";
@@ -40,21 +46,16 @@ public class MapLocationActivity extends AppCompatActivity implements OnMapReady
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(TAG, "onCreate called");
-
         int resultCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this);
         if (resultCode != ConnectionResult.SUCCESS) {
-            Log.e(TAG, "Google Play Services error: " + resultCode);
             Toast.makeText(this, "Google Play Services not available", Toast.LENGTH_LONG).show();
             finish();
             return;
         }
-        Log.d(TAG, "Google Play Services available");
 
         try {
             setContentView(R.layout.activity_map_location);
         } catch (Exception e) {
-            Log.e(TAG, "Failed to set content view: " + e.getMessage(), e);
             Toast.makeText(this, "Error loading layout", Toast.LENGTH_SHORT).show();
             finish();
             return;
@@ -62,7 +63,6 @@ public class MapLocationActivity extends AppCompatActivity implements OnMapReady
 
         confirmLocationButton = findViewById(R.id.confirm_location_button);
         if (confirmLocationButton == null) {
-            Log.e(TAG, "Confirm location button not found in layout");
             Toast.makeText(this, "Error initializing UI", Toast.LENGTH_SHORT).show();
             finish();
             return;
@@ -75,7 +75,6 @@ public class MapLocationActivity extends AppCompatActivity implements OnMapReady
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         } else {
-            Log.e(TAG, "Map fragment not found");
             Toast.makeText(this, "Error loading map", Toast.LENGTH_SHORT).show();
             finish();
             return;
@@ -86,11 +85,11 @@ public class MapLocationActivity extends AppCompatActivity implements OnMapReady
                 Intent resultIntent = new Intent();
                 resultIntent.putExtra("latitude", selectedLatLng.latitude);
                 resultIntent.putExtra("longitude", selectedLatLng.longitude);
+                String placeName = getPlaceName(selectedLatLng.latitude, selectedLatLng.longitude);
+                resultIntent.putExtra("locationName", placeName != null ? placeName : "Lat: " + selectedLatLng.latitude + ", Lng: " + selectedLatLng.longitude);
                 setResult(RESULT_OK, resultIntent);
-                Log.d(TAG, "Location confirmed: lat=" + selectedLatLng.latitude + ", lng=" + selectedLatLng.longitude);
             } else {
                 setResult(RESULT_CANCELED);
-                Log.d(TAG, "No location selected");
             }
             finish();
         });
@@ -98,10 +97,8 @@ public class MapLocationActivity extends AppCompatActivity implements OnMapReady
 
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
-        Log.d(TAG, "onMapReady called");
         myMap = googleMap;
         myMap.setOnMarkerDragListener(this);
-
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -117,35 +114,25 @@ public class MapLocationActivity extends AppCompatActivity implements OnMapReady
     private void enableMyLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
-            Log.w(TAG, "Location permission not granted");
             return;
         }
 
         try {
             myMap.setMyLocationEnabled(true);
         } catch (Exception e) {
-            Log.e(TAG, "Failed to enable my location: " + e.getMessage(), e);
             Toast.makeText(this, "Error enabling location", Toast.LENGTH_SHORT).show();
             return;
         }
 
         fusedLocationClient.getLastLocation().addOnSuccessListener(this, location -> {
             if (location != null) {
-                LatLng currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
-                selectedLatLng = currentLocation;
-
-
+                selectedLatLng = new LatLng(location.getLatitude(), location.getLongitude());
                 selectedLocationMarker = myMap.addMarker(new MarkerOptions()
-                        .position(currentLocation)
+                        .position(selectedLatLng)
                         .title("Your Location")
                         .draggable(true));
-
-                myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 15));
-                Log.d(TAG, "Current location: " + currentLocation);
+                myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(selectedLatLng, 15));
             } else {
-                Log.w(TAG, "Last known location is null");
-                Toast.makeText(this, "Unable to get current location", Toast.LENGTH_SHORT).show();
-                // Default to a location (e.g., Sydney)
                 selectedLatLng = new LatLng(-33.8688, 151.2093);
                 selectedLocationMarker = myMap.addMarker(new MarkerOptions()
                         .position(selectedLatLng)
@@ -154,9 +141,6 @@ public class MapLocationActivity extends AppCompatActivity implements OnMapReady
                 myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(selectedLatLng, 15));
             }
         }).addOnFailureListener(e -> {
-            Log.e(TAG, "Failed to get location: " + e.getMessage(), e);
-            Toast.makeText(this, "Failed to get location", Toast.LENGTH_SHORT).show();
-
             selectedLatLng = new LatLng(-33.8688, 151.2093);
             selectedLocationMarker = myMap.addMarker(new MarkerOptions()
                     .position(selectedLatLng)
@@ -173,9 +157,6 @@ public class MapLocationActivity extends AppCompatActivity implements OnMapReady
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 enableMyLocation();
             } else {
-                Log.w(TAG, "Location permission denied");
-                Toast.makeText(this, "Location permission is denied, please allow the permission", Toast.LENGTH_LONG).show();
-
                 selectedLatLng = new LatLng(-33.8688, 151.2093);
                 selectedLocationMarker = myMap.addMarker(new MarkerOptions()
                         .position(selectedLatLng)
@@ -187,18 +168,32 @@ public class MapLocationActivity extends AppCompatActivity implements OnMapReady
     }
 
     @Override
-    public void onMarkerDragStart(Marker marker) {
-        Log.d(TAG, "Marker drag started: " + marker.getPosition());
-    }
+    public void onMarkerDragStart(Marker marker) {}
 
     @Override
-    public void onMarkerDrag(Marker marker) {
-
-    }
+    public void onMarkerDrag(Marker marker) {}
 
     @Override
     public void onMarkerDragEnd(Marker marker) {
         selectedLatLng = marker.getPosition();
-        Log.d(TAG, "Marker drag ended: " + selectedLatLng);
+    }
+
+    private String getPlaceName(double latitude, double longitude) {
+        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+        try {
+            List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
+            if (addresses != null && !addresses.isEmpty()) {
+                Address address = addresses.get(0);
+                StringBuilder addressString = new StringBuilder();
+                for (int i = 0; i <= address.getMaxAddressLineIndex(); i++) {
+                    if (i > 0) addressString.append(", ");
+                    addressString.append(address.getAddressLine(i));
+                }
+                return addressString.toString();
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Geocoder failed: " + e.getMessage(), e);
+        }
+        return null;
     }
 }
