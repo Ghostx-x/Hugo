@@ -26,6 +26,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.hugo.R;
+import com.example.hugo.bottomnavbar.Home.ConversationFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -121,7 +122,32 @@ public class ViewProfileFragment extends Fragment {
         loadUserData();
 
         chatButton.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Chat with " + profileName.getText(), Toast.LENGTH_SHORT).show();
+            String chatUserId = userId;
+            String chatUserName = profileName.getText() != null ? profileName.getText().toString() : "Unknown";
+            Log.d(TAG, "Chat button clicked: userId=" + chatUserId + ", userName=" + chatUserName);
+
+            if (chatUserId == null || chatUserId.isEmpty()) {
+                Log.w(TAG, "Cannot start chat: Invalid user ID");
+                Toast.makeText(getContext(), "Cannot start chat: Invalid user", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (chatUserName.isEmpty() || chatUserName.equals("No Name")) {
+                chatUserName = "Unknown User";
+                Log.w(TAG, "Using fallback user name: " + chatUserName);
+            }
+
+            try {
+                ConversationFragment conversationFragment = ConversationFragment.newInstance(chatUserId, chatUserName);
+                getParentFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, conversationFragment)
+                        .addToBackStack(null)
+                        .commit();
+                Log.d(TAG, "Navigating to ConversationFragment");
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to navigate to ConversationFragment: " + e.getMessage(), e);
+                Toast.makeText(getContext(), "Failed to open chat", Toast.LENGTH_SHORT).show();
+            }
         });
 
         bookButton.setOnClickListener(v -> {
