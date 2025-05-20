@@ -1,10 +1,20 @@
 package com.example.hugo.bottomnavbar.Profile;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
+import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -44,6 +54,20 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         holder.bookedTime.setText("Booked for: " + order.bookedTime);
         holder.status.setText("Status: " + order.status);
 
+        if (order.userPhotoBase64 != null && !order.userPhotoBase64.isEmpty()) {
+            try {
+                byte[] decodedBytes = Base64.decode(order.userPhotoBase64, Base64.DEFAULT);
+                Bitmap bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+                Bitmap circularBitmap = getCircularBitmap(bitmap);
+                holder.userImage.setImageBitmap(circularBitmap);
+            } catch (Exception e) {
+                Log.e("OrderAdapter", "Failed to load profile image: " + e.getMessage(), e);
+                holder.userImage.setImageResource(R.drawable.ic_profile);
+            }
+        } else {
+            holder.userImage.setImageResource(R.drawable.ic_profile);
+        }
+
         if ("pending".equals(order.status)) {
             holder.acceptButton.setVisibility(View.VISIBLE);
             holder.declineButton.setVisibility(View.VISIBLE);
@@ -61,12 +85,31 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         return orders.size();
     }
 
+    // Helper method to transform a bitmap into a circular shape
+    private Bitmap getCircularBitmap(Bitmap bitmap) {
+        int size = Math.min(bitmap.getWidth(), bitmap.getHeight());
+        Bitmap output = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(output);
+        Paint paint = new Paint();
+        Rect rect = new Rect(0, 0, size, size);
+        paint.setAntiAlias(true);
+        canvas.drawARGB(0, 0, 0, 0);
+        paint.setColor(android.graphics.Color.WHITE);
+        float radius = size / 2f;
+        canvas.drawCircle(radius, radius, radius, paint);
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+        canvas.drawBitmap(bitmap, rect, rect, paint);
+        return output;
+    }
+
     class OrderViewHolder extends RecyclerView.ViewHolder {
+        ImageView userImage;
         TextView userName, bookedTime, status;
         Button acceptButton, declineButton;
 
         OrderViewHolder(View itemView) {
             super(itemView);
+            userImage = itemView.findViewById(R.id.user_image);
             userName = itemView.findViewById(R.id.user_name);
             bookedTime = itemView.findViewById(R.id.booked_time);
             status = itemView.findViewById(R.id.order_status);

@@ -1,26 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="8dp"
     android:elevation="4dp"
-    android:padding="12dp"
     android:background="@color/milky">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:padding="12dp"
         android:background="@color/milky">
 
         <ImageView
             android:id="@+id/item_profile_image"
             android:layout_width="64dp"
             android:layout_height="64dp"
-            android:src="@drawable/ic_profile"
             android:layout_gravity="center_vertical"
             android:layout_marginEnd="12dp"
-            android:scaleType="centerCrop" />
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_profile"
+            android:contentDescription="Profile Image"
+            android:clipToOutline="true"
+            android:background="@drawable/circle_background" />
 
         <LinearLayout
             android:orientation="vertical"
@@ -30,18 +34,18 @@
 
             <TextView
                 android:id="@+id/item_name"
-                android:text="Username"
-                android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:fontFamily="@font/quicksand_bold"
+                android:text="Username"
                 android:textColor="@color/black"
                 android:textStyle="bold"
                 android:textSize="16sp"/>
 
             <TextView
                 android:id="@+id/item_bio"
-                android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:fontFamily="@font/quicksand_semibold"
                 android:textColor="@color/black"
                 android:text="Bio here"
@@ -50,8 +54,8 @@
 
             <TextView
                 android:id="@+id/item_role"
-                android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:fontFamily="@font/quicksand_semibold"
                 android:text="Role"
                 android:textSize="14sp"

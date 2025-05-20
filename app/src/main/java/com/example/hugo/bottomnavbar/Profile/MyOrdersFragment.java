@@ -77,10 +77,11 @@ public class MyOrdersFragment extends Fragment implements OrderAdapter.OnStatusU
                     String bookingId = notificationSnapshot.child("bookingId").getValue(String.class);
                     String userId = notificationSnapshot.child("userId").getValue(String.class);
                     String userName = notificationSnapshot.child("userName").getValue(String.class);
+                    String photoBase64 = notificationSnapshot.child("userPhotoBase64").getValue(String.class);
                     String bookedTime = notificationSnapshot.child("bookedTime").getValue(String.class);
                     String status = notificationSnapshot.child("status").getValue(String.class);
                     if (bookingId != null && userId != null && userName != null && bookedTime != null && status != null) {
-                        orderList.add(new Notification(notificationId, bookingId, userId, userName, bookedTime, status));
+                        orderList.add(new Notification(notificationId, bookingId, userId, userName, photoBase64 != null ? photoBase64 : "", bookedTime, status));
                     }
                 }
                 adapter.notifyDataSetChanged();
@@ -125,15 +126,78 @@ class Notification {
     public String bookingId;
     public String userId;
     public String userName;
+    public String userPhotoBase64;
     public String bookedTime;
     public String status;
 
-    public Notification(String notificationId, String bookingId, String userId, String userName, String bookedTime, String status) {
+    public Notification() {
+        // Default constructor for Firebase
+    }
+
+    public Notification(String notificationId, String bookingId, String userId, String userName, String userPhotoBase64, String bookedTime, String status) {
         this.notificationId = notificationId;
         this.bookingId = bookingId;
         this.userId = userId;
         this.userName = userName;
+        this.userPhotoBase64 = userPhotoBase64;
         this.bookedTime = bookedTime;
+        this.status = status;
+    }
+
+    // Getters and setters
+    public String getNotificationId() {
+        return notificationId;
+    }
+
+    public void setNotificationId(String notificationId) {
+        this.notificationId = notificationId;
+    }
+
+    public String getBookingId() {
+        return bookingId;
+    }
+
+    public void setBookingId(String bookingId) {
+        this.bookingId = bookingId;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getUserPhotoBase64() {
+        return userPhotoBase64;
+    }
+
+    public void setUserPhotoBase64(String userPhotoBase64) {
+        this.userPhotoBase64 = userPhotoBase64;
+    }
+
+    public String getBookedTime() {
+        return bookedTime;
+    }
+
+    public void setBookedTime(String bookedTime) {
+        this.bookedTime = bookedTime;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
         this.status = status;
     }
 }

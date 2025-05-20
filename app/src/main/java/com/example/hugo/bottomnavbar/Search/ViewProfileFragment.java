@@ -1,6 +1,14 @@
 package com.example.hugo.bottomnavbar.Search;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,14 +26,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.hugo.R;
-import com.example.hugo.bottomnavbar.Search.Dog;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,7 +69,6 @@ public class ViewProfileFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         Log.d(TAG, "onViewCreated called");
 
-
         try {
             profileImage = view.findViewById(R.id.profile_image);
             profileName = view.findViewById(R.id.profile_name);
@@ -100,11 +105,9 @@ public class ViewProfileFragment extends Fragment {
             return;
         }
 
-
         reviewsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         reviewAdapter = new ReviewAdapter(getContext(), new ArrayList<>());
         reviewsRecyclerView.setAdapter(reviewAdapter);
-
 
         String userId = getArguments() != null ? getArguments().getString(ARG_USER_ID) : null;
         if (userId == null) {
@@ -114,10 +117,8 @@ public class ViewProfileFragment extends Fragment {
             return;
         }
 
-
         userRef = FirebaseDatabase.getInstance().getReference("Users").child(userId);
         loadUserData();
-
 
         chatButton.setOnClickListener(v -> {
             Toast.makeText(getContext(), "Chat with " + profileName.getText(), Toast.LENGTH_SHORT).show();
@@ -144,31 +145,25 @@ public class ViewProfileFragment extends Fragment {
                     return;
                 }
 
-
                 profileName.setText(user.name != null ? user.name : "No Name");
                 profileBio.setText(user.bio != null ? user.bio : "No bio");
                 profileUserType.setText(user.userType != null ? user.userType : "Unknown");
                 profileRanking.setText(user.ranking != null && user.ranking > 0 ? String.format("Rating: %.1f/5", user.ranking) : "Rating: N/A");
 
-                if (user.profileImageUrl != null && !user.profileImageUrl.isEmpty()) {
-                    Picasso.get()
-                            .load(user.profileImageUrl)
-                            .placeholder(R.drawable.ic_profile)
-                            .error(R.drawable.ic_profile)
-                            .into(profileImage, new com.squareup.picasso.Callback() {
-                                @Override
-                                public void onSuccess() {
-                                    Log.d(TAG, "Profile image loaded: " + user.profileImageUrl);
-                                }
-                                @Override
-                                public void onError(Exception e) {
-                                    Log.e(TAG, "Failed to load profile image: " + user.profileImageUrl, e);
-                                }
-                            });
+                if (user.profileImageBase64 != null && !user.profileImageBase64.isEmpty()) {
+                    try {
+                        byte[] decodedBytes = Base64.decode(user.profileImageBase64, Base64.DEFAULT);
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+                        Bitmap circularBitmap = getCircularBitmap(bitmap);
+                        profileImage.setImageBitmap(circularBitmap);
+                        Log.d(TAG, "Profile image loaded for user: " + user.name);
+                    } catch (Exception e) {
+                        Log.e(TAG, "Failed to load profile image: " + e.getMessage(), e);
+                        profileImage.setImageResource(R.drawable.ic_profile);
+                    }
                 } else {
                     profileImage.setImageResource(R.drawable.ic_profile);
                 }
-
 
                 if (profileAvailability != null) {
                     if (isServiceProvider(user.userType) && user.availability != null && !user.availability.isEmpty()) {
@@ -193,7 +188,6 @@ public class ViewProfileFragment extends Fragment {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dogsSnapshot) {
                         Dog dog = null;
-
                         for (DataSnapshot dogSnapshot : dogsSnapshot.getChildren()) {
                             dog = dogSnapshot.getValue(Dog.class);
                             break;
@@ -205,22 +199,17 @@ public class ViewProfileFragment extends Fragment {
                             dogBreed.setText(dog.breed != null ? dog.breed : "Unknown Breed");
                             dogAge.setText(dog.age > 0 ? dog.age + " years" : "Unknown Age");
 
-                            final String dogImageUrl = dog.profileImageUrl;
-                            if (dogImageUrl != null && !dogImageUrl.isEmpty()) {
-                                Picasso.get()
-                                        .load(dogImageUrl)
-                                        .placeholder(R.drawable.ic_profile)
-                                        .error(R.drawable.ic_profile)
-                                        .into(dogImage, new com.squareup.picasso.Callback() {
-                                            @Override
-                                            public void onSuccess() {
-                                                Log.d(TAG, "Dog image loaded: " + dogImageUrl);
-                                            }
-                                            @Override
-                                            public void onError(Exception e) {
-                                                Log.e(TAG, "Failed to load dog image: " + dogImageUrl, e);
-                                            }
-                                        });
+                            if (dog.profileImageBase64 != null && !dog.profileImageBase64.isEmpty()) {
+                                try {
+                                    byte[] decodedBytes = Base64.decode(dog.profileImageBase64, Base64.DEFAULT);
+                                    Bitmap bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+                                    Bitmap circularBitmap = getCircularBitmap(bitmap);
+                                    dogImage.setImageBitmap(circularBitmap);
+                                    Log.d(TAG, "Dog image loaded for dog: " + dog.name);
+                                } catch (Exception e) {
+                                    Log.e(TAG, "Failed to load dog image: " + e.getMessage(), e);
+                                    dogImage.setImageResource(R.drawable.ic_profile);
+                                }
                             } else {
                                 dogImage.setImageResource(R.drawable.ic_profile);
                             }
@@ -236,13 +225,11 @@ public class ViewProfileFragment extends Fragment {
                     }
                 });
 
-
                 if (user.userType != null && user.userType.equalsIgnoreCase("Dog Owner")) {
                     bookButton.setVisibility(View.GONE);
                 } else {
                     bookButton.setVisibility(View.VISIBLE);
                 }
-
 
                 loadReviews();
             }
@@ -283,5 +270,22 @@ public class ViewProfileFragment extends Fragment {
                 Log.e(TAG, "Failed to load reviews: " + error.getMessage());
             }
         });
+    }
+
+    // Helper method to transform a bitmap into a circular shape
+    private Bitmap getCircularBitmap(Bitmap bitmap) {
+        int size = Math.min(bitmap.getWidth(), bitmap.getHeight());
+        Bitmap output = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(output);
+        Paint paint = new Paint();
+        Rect rect = new Rect(0, 0, size, size);
+        paint.setAntiAlias(true);
+        canvas.drawARGB(0, 0, 0, 0);
+        paint.setColor(android.graphics.Color.WHITE);
+        float radius = size / 2f;
+        canvas.drawCircle(radius, radius, radius, paint);
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+        canvas.drawBitmap(bitmap, rect, rect, paint);
+        return output;
     }
 }

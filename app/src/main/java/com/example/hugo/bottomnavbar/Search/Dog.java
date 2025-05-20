@@ -4,26 +4,49 @@ public class Dog {
     public String name;
     public String breed;
     public int age;
-    public String profileImageUrl;
-    public String birthday;
-    public String specialCare;
+    public String profileImageBase64;
 
     public Dog() {
+        // Default constructor for Firebase
     }
 
-    public Dog(String name, String breed, int age, String profileImageUrl) {
+    public Dog(String name, String breed, int age, String profileImageBase64) {
         this.name = name;
         this.breed = breed;
         this.age = age;
-        this.profileImageUrl = profileImageUrl;
+        this.profileImageBase64 = profileImageBase64;
     }
 
-    public Dog(String name, String breed, int age, String profileImageUrl, String birthday, String specialCare) {
+    // Getters and setters
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
         this.name = name;
+    }
+
+    public String getBreed() {
+        return breed;
+    }
+
+    public void setBreed(String breed) {
         this.breed = breed;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
         this.age = age;
-        this.profileImageUrl = profileImageUrl;
-        this.birthday = birthday;
-        this.specialCare = specialCare;
+    }
+
+    public String getProfileImageBase64() {
+        return profileImageBase64;
+    }
+
+    public void setProfileImageBase64(String profileImageBase64) {
+        this.profileImageBase64 = profileImageBase64;
     }
 }

@@ -3,52 +3,57 @@ package com.example.hugo.bottomnavbar.Profile;
 public class Booking {
     public String bookedUserId;
     public String bookedUserName;
-    public String bookedUserPhotoUrl;
+    public String bookedUserPhotoBase64;
     public String bookedTime;
     public String status;
 
-    public Booking(String bookedUserId, String bookedUserName, String bookedUserPhotoUrl, String bookedTime, String status) {
+    public Booking() {
+
+    }
+
+    public Booking(String bookedUserId, String bookedUserName, String bookedUserPhotoBase64, String bookedTime, String status) {
         this.bookedUserId = bookedUserId;
         this.bookedUserName = bookedUserName;
-        this.bookedUserPhotoUrl = bookedUserPhotoUrl;
+        this.bookedUserPhotoBase64 = bookedUserPhotoBase64;
         this.bookedTime = bookedTime;
         this.status = status;
     }
 
+
     public String getBookedUserId() {
         return bookedUserId;
-    }
-
-    public String getBookedUserName() {
-        return bookedUserName;
-    }
-
-    public String getBookedUserPhotoUrl() {
-        return bookedUserPhotoUrl;
-    }
-
-    public String getBookedTime() {
-        return bookedTime;
-    }
-
-    public String getStatus() {
-        return status;
     }
 
     public void setBookedUserId(String bookedUserId) {
         this.bookedUserId = bookedUserId;
     }
 
+    public String getBookedUserName() {
+        return bookedUserName;
+    }
+
     public void setBookedUserName(String bookedUserName) {
         this.bookedUserName = bookedUserName;
     }
 
-    public void setBookedUserPhotoUrl(String bookedUserPhotoUrl) {
-        this.bookedUserPhotoUrl = bookedUserPhotoUrl;
+    public String getBookedUserPhotoBase64() {
+        return bookedUserPhotoBase64;
+    }
+
+    public void setBookedUserPhotoBase64(String bookedUserPhotoBase64) {
+        this.bookedUserPhotoBase64 = bookedUserPhotoBase64;
+    }
+
+    public String getBookedTime() {
+        return bookedTime;
     }
 
     public void setBookedTime(String bookedTime) {
         this.bookedTime = bookedTime;
+    }
+
+    public String getStatus() {
+        return status;
     }
 
     public void setStatus(String status) {

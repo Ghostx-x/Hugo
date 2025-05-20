@@ -74,11 +74,11 @@ public class MyBookingsFragment extends Fragment {
                 for (DataSnapshot bookingSnapshot : snapshot.getChildren()) {
                     String userId = bookingSnapshot.child("bookedUserId").getValue(String.class);
                     String userName = bookingSnapshot.child("bookedUserName").getValue(String.class);
-                    String photoUrl = bookingSnapshot.child("bookedUserPhotoUrl").getValue(String.class);
+                    String photoBase64 = bookingSnapshot.child("bookedUserPhotoBase64").getValue(String.class);
                     String bookedTime = bookingSnapshot.child("bookedTime").getValue(String.class);
                     String status = bookingSnapshot.child("status").getValue(String.class);
                     if (userId != null && userName != null && bookedTime != null && status != null) {
-                        bookingList.add(new Booking(userId, userName, photoUrl != null ? photoUrl : "", bookedTime, status));
+                        bookingList.add(new Booking(userId, userName, photoBase64 != null ? photoBase64 : "", bookedTime, status));
                     }
                 }
                 adapter.notifyDataSetChanged();

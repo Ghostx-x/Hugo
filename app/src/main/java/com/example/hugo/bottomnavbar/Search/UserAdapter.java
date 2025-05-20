@@ -1,6 +1,9 @@
 package com.example.hugo.bottomnavbar.Search;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,15 +46,19 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         holder.bioText.setText(user.bio != null ? user.bio : "");
         holder.roleText.setText(user.userType != null ? user.userType : "");
 
-        if (user.profileImageUrl != null && !user.profileImageUrl.isEmpty()) {
-            Picasso.get()
-                    .load(user.profileImageUrl)
-                    .placeholder(R.drawable.ic_profile)
-                    .error(R.drawable.ic_profile)
-                    .into(holder.profileImage);
+        if (user.profileImageBase64 != null && !user.profileImageBase64.isEmpty()) {
+            try {
+                byte[] decodedBytes = Base64.decode(user.profileImageBase64, Base64.DEFAULT);
+                Bitmap bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+                holder.profileImage.setImageBitmap(bitmap);
+            } catch (Exception e) {
+                e.printStackTrace();
+                holder.profileImage.setImageResource(R.drawable.ic_profile);
+            }
         } else {
             holder.profileImage.setImageResource(R.drawable.ic_profile);
         }
+
 
         // Navigate to ViewProfileFragment on click
         holder.itemView.setOnClickListener(v -> {
