@@ -56,6 +56,30 @@
             android:textColor="@color/black"
             android:fontFamily="@font/quicksand_semibold" />
 
+        <ImageView
+            android:id="@+id/attach_image_button"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginStart="8dp"
+            android:src="@drawable/ic_image"
+            android:contentDescription="Attach Image" />
+
+        <ImageView
+            android:id="@+id/attach_video_button"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginStart="8dp"
+            android:src="@drawable/ic_video"
+            android:contentDescription="Attach Video" />
+
+        <ImageView
+            android:id="@+id/share_location_button"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginStart="8dp"
+            android:src="@drawable/ic_location"
+            android:contentDescription="Share Location" />
+
         <Button
             android:id="@+id/send_button"
             android:layout_width="wrap_content"
