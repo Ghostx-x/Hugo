@@ -13,11 +13,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.hugo.R;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -30,10 +33,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     private static final int VIEW_TYPE_RECEIVED_TEXT = 2;
     private static final int VIEW_TYPE_SENT_IMAGE = 3;
     private static final int VIEW_TYPE_RECEIVED_IMAGE = 4;
-    private static final int VIEW_TYPE_SENT_VIDEO = 5;
-    private static final int VIEW_TYPE_RECEIVED_VIDEO = 6;
-    private static final int VIEW_TYPE_SENT_LOCATION = 7;
-    private static final int VIEW_TYPE_RECEIVED_LOCATION = 8;
+    private static final int VIEW_TYPE_SENT_LOCATION = 5;
+    private static final int VIEW_TYPE_RECEIVED_LOCATION = 6;
 
     private List<Message> messages;
     private Context context;
@@ -57,8 +58,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         switch (type) {
             case "image":
                 return isSent ? VIEW_TYPE_SENT_IMAGE : VIEW_TYPE_RECEIVED_IMAGE;
-            case "video":
-                return isSent ? VIEW_TYPE_SENT_VIDEO : VIEW_TYPE_RECEIVED_VIDEO;
             case "location":
                 return isSent ? VIEW_TYPE_SENT_LOCATION : VIEW_TYPE_RECEIVED_LOCATION;
             default:
@@ -69,19 +68,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     @NonNull
     @Override
     public MessageViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        int layoutRes;
-        switch (viewType) {
-            case VIEW_TYPE_SENT_IMAGE:
-            case VIEW_TYPE_RECEIVED_IMAGE:
-            case VIEW_TYPE_SENT_VIDEO:
-            case VIEW_TYPE_RECEIVED_VIDEO:
-            case VIEW_TYPE_SENT_LOCATION:
-            case VIEW_TYPE_RECEIVED_LOCATION:
-                layoutRes = viewType % 2 == 1 ? R.layout.item_message_sent : R.layout.item_message_received;
-                break;
-            default:
-                layoutRes = viewType == VIEW_TYPE_SENT_TEXT ? R.layout.item_message_sent : R.layout.item_message_received;
-        }
+        int layoutRes = viewType % 2 == 1 ? R.layout.item_message_sent : R.layout.item_message_received;
         View view = LayoutInflater.from(context).inflate(layoutRes, parent, false);
         return new MessageViewHolder(view);
     }
@@ -101,7 +88,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             case "image":
                 holder.messageText.setVisibility(View.GONE);
                 holder.mediaImage.setVisibility(View.VISIBLE);
-                holder.playIcon.setVisibility(View.GONE);
                 holder.locationText.setVisibility(View.GONE);
                 String imageBase64 = message.getMediaBase64();
                 if (imageBase64 != null && !imageBase64.isEmpty()) {
@@ -127,31 +113,18 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     if (imageBase64 != null) {
                         Intent intent = new Intent(Intent.ACTION_VIEW);
                         intent.setDataAndType(Uri.parse("data:image/jpeg;base64," + imageBase64), "image/*");
-                        context.startActivity(Intent.createChooser(intent, "View Image"));
-                    }
-                });
-                break;
-            case "video":
-                holder.messageText.setVisibility(View.GONE);
-                holder.mediaImage.setVisibility(View.VISIBLE);
-                holder.playIcon.setVisibility(View.VISIBLE);
-                holder.locationText.setVisibility(View.GONE);
-                String videoBase64 = message.getMediaBase64();
-                Glide.with(context)
-                        .load(R.drawable.ic_video)
-                        .into(holder.mediaImage);
-                holder.mediaImage.setOnClickListener(v -> {
-                    if (videoBase64 != null) {
-                        Intent intent = new Intent(Intent.ACTION_VIEW);
-                        intent.setDataAndType(Uri.parse("data:video/mp4;base64," + videoBase64), "video/*");
-                        context.startActivity(Intent.createChooser(intent, "Play Video"));
+                        try {
+                            context.startActivity(Intent.createChooser(intent, "View Image"));
+                        } catch (Exception e) {
+                            Log.e(TAG, "Failed to open image: " + e.getMessage(), e);
+                            Toast.makeText(context, "Cannot open image", Toast.LENGTH_SHORT).show();
+                        }
                     }
                 });
                 break;
             case "location":
                 holder.messageText.setVisibility(View.GONE);
                 holder.mediaImage.setVisibility(View.GONE);
-                holder.playIcon.setVisibility(View.GONE);
                 holder.locationText.setVisibility(View.VISIBLE);
                 holder.locationText.setText("Shared Location");
                 holder.locationText.setOnClickListener(v -> {
@@ -161,10 +134,15 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                         Uri gmmIntentUri = Uri.parse("geo:" + lat + "," + lon + "?q=" + lat + "," + lon);
                         Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
                         mapIntent.setPackage("com.google.android.apps.maps");
-                        if (mapIntent.resolveActivity(context.getPackageManager()) != null) {
-                            context.startActivity(mapIntent);
-                        } else {
-                            context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://maps.google.com/?q=" + lat + "," + lon)));
+                        try {
+                            if (mapIntent.resolveActivity(context.getPackageManager()) != null) {
+                                context.startActivity(mapIntent);
+                            } else {
+                                context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://maps.google.com/?q=" + lat + "," + lon)));
+                            }
+                        } catch (Exception e) {
+                            Log.e(TAG, "Failed to open location: " + e.getMessage(), e);
+                            Toast.makeText(context, "Cannot open location", Toast.LENGTH_SHORT).show();
                         }
                     } else {
                         Toast.makeText(context, "Invalid location data", Toast.LENGTH_SHORT).show();
@@ -174,7 +152,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             default:
                 holder.messageText.setVisibility(View.VISIBLE);
                 holder.mediaImage.setVisibility(View.GONE);
-                holder.playIcon.setVisibility(View.GONE);
                 holder.locationText.setVisibility(View.GONE);
                 String text = message.getMessage();
                 holder.messageText.setText(text != null ? text : "");
@@ -193,22 +170,19 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     class MessageViewHolder extends RecyclerView.ViewHolder {
         TextView messageText, timestampText, locationText;
-        ImageView mediaImage, playIcon;
+        ImageView mediaImage;
 
         MessageViewHolder(View itemView) {
             super(itemView);
             messageText = itemView.findViewById(R.id.message_text);
             timestampText = itemView.findViewById(R.id.timestamp_text);
             mediaImage = itemView.findViewById(R.id.media_image);
-            playIcon = itemView.findViewById(R.id.play_icon);
             locationText = itemView.findViewById(R.id.location_text);
 
-            if (messageText == null || timestampText == null || mediaImage == null ||
-                    playIcon == null || locationText == null) {
+            if (messageText == null || timestampText == null || mediaImage == null || locationText == null) {
                 Log.e(TAG, "One or more views not found in item_message: " +
                         "messageText=" + messageText + ", timestampText=" + timestampText +
-                        ", mediaImage=" + mediaImage + ", playIcon=" + playIcon +
-                        ", locationText=" + locationText);
+                        ", mediaImage=" + mediaImage + ", locationText=" + locationText);
             }
         }
     }

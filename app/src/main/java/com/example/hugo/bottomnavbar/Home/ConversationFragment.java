@@ -8,13 +8,14 @@ import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,12 +24,15 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.hugo.R;
+import com.example.hugo.bottomnavbar.Search.ViewProfileFragment;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.firebase.auth.FirebaseAuth;
@@ -40,7 +44,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,18 +57,18 @@ public class ConversationFragment extends Fragment {
     private MessageAdapter messageAdapter;
     private List<Message> messageList;
     private EditText messageInput;
-    private Button sendButton;
-    private ImageView attachImageButton, attachVideoButton, shareLocationButton;
+    private ImageView attachButton, cameraButton;
+    private ImageButton sendButton;
     private TextView otherUserNameText;
     private FirebaseAuth mAuth;
     private DatabaseReference chatsRef;
     private FusedLocationProviderClient fusedLocationClient;
     private String otherUserId, otherUserName, chatId;
 
-    // Activity result launchers for picking media and requesting permissions
+    // Activity result launchers for picking media, requesting permissions, and camera
     private ActivityResultLauncher<String> requestPermissionLauncher;
     private ActivityResultLauncher<Intent> pickImageLauncher;
-    private ActivityResultLauncher<Intent> pickVideoLauncher;
+    private ActivityResultLauncher<Intent> capturePhotoLauncher;
 
     public static ConversationFragment newInstance(String otherUserId, String otherUserName) {
         ConversationFragment fragment = new ConversationFragment();
@@ -84,7 +87,8 @@ public class ConversationFragment extends Fragment {
             view = inflater.inflate(R.layout.fragment_conversation, container, false);
         } catch (Exception e) {
             Log.e(TAG, "Failed to inflate fragment_conversation: " + e.getMessage(), e);
-            Toast.makeText(getContext(), "Failed to load chat UI", Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "Exception stack trace: ", e);
+            Toast.makeText(requireContext(), "Failed to load chat UI: " + e.getMessage(), Toast.LENGTH_LONG).show();
             getParentFragmentManager().popBackStack();
             return null;
         }
@@ -93,16 +97,20 @@ public class ConversationFragment extends Fragment {
             messagesRecyclerView = view.findViewById(R.id.messages_recycler_view);
             messageInput = view.findViewById(R.id.message_input);
             sendButton = view.findViewById(R.id.send_button);
-            attachImageButton = view.findViewById(R.id.attach_image_button);
-            attachVideoButton = view.findViewById(R.id.attach_video_button);
-            shareLocationButton = view.findViewById(R.id.share_location_button);
+            attachButton = view.findViewById(R.id.attach_button);
+            cameraButton = view.findViewById(R.id.camera_button);
             otherUserNameText = view.findViewById(R.id.other_user_name);
 
             if (messagesRecyclerView == null || messageInput == null || sendButton == null ||
-                    attachImageButton == null || attachVideoButton == null || shareLocationButton == null ||
-                    otherUserNameText == null) {
-                Log.e(TAG, "One or more views not found in fragment_conversation");
-                Toast.makeText(getContext(), "UI initialization failed", Toast.LENGTH_SHORT).show();
+                    attachButton == null || cameraButton == null || otherUserNameText == null) {
+                Log.e(TAG, "One or more views not found in fragment_conversation: " +
+                        "messagesRecyclerView=" + messagesRecyclerView +
+                        ", messageInput=" + messageInput +
+                        ", sendButton=" + sendButton +
+                        ", attachButton=" + attachButton +
+                        ", cameraButton=" + cameraButton +
+                        ", otherUserNameText=" + otherUserNameText);
+                Toast.makeText(requireContext(), "UI initialization failed", Toast.LENGTH_SHORT).show();
                 getParentFragmentManager().popBackStack();
                 return view;
             }
@@ -115,7 +123,8 @@ public class ConversationFragment extends Fragment {
             }
         } catch (Exception e) {
             Log.e(TAG, "Error initializing views: " + e.getMessage(), e);
-            Toast.makeText(getContext(), "UI initialization failed", Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "Exception stack trace: ", e);
+            Toast.makeText(requireContext(), "UI initialization failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
             getParentFragmentManager().popBackStack();
             return view;
         }
@@ -129,7 +138,7 @@ public class ConversationFragment extends Fragment {
             if (isGranted) {
                 Log.d(TAG, "Permission granted");
             } else {
-                Toast.makeText(getContext(), "Permission denied", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Permission denied", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -142,11 +151,14 @@ public class ConversationFragment extends Fragment {
             }
         });
 
-        pickVideoLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+        capturePhotoLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
             if (result.getResultCode() == requireActivity().RESULT_OK && result.getData() != null) {
-                Uri videoUri = result.getData().getData();
-                if (videoUri != null) {
-                    sendMedia(videoUri, "video");
+                Bitmap photo = (Bitmap) result.getData().getExtras().get("data");
+                if (photo != null) {
+                    sendCameraPhoto(photo);
+                } else {
+                    Log.w(TAG, "Failed to capture photo: Bitmap is null");
+                    Toast.makeText(requireContext(), "Failed to capture photo", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -157,14 +169,14 @@ public class ConversationFragment extends Fragment {
             Log.d(TAG, "Received arguments: otherUserId=" + otherUserId + ", otherUserName=" + otherUserName);
         } else {
             Log.w(TAG, "No arguments provided");
-            Toast.makeText(getContext(), "Invalid chat data", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Invalid chat data", Toast.LENGTH_SHORT).show();
             getParentFragmentManager().popBackStack();
             return view;
         }
 
         if (otherUserId == null || otherUserId.isEmpty()) {
             Log.w(TAG, "Invalid otherUserId");
-            Toast.makeText(getContext(), "Cannot load chat: Invalid user", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Cannot load chat: Invalid user", Toast.LENGTH_SHORT).show();
             getParentFragmentManager().popBackStack();
             return view;
         }
@@ -175,11 +187,12 @@ public class ConversationFragment extends Fragment {
         }
 
         otherUserNameText.setText(otherUserName);
+        otherUserNameText.setOnClickListener(v -> navigateToProfile());
 
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser == null) {
             Log.w(TAG, "User not signed in");
-            Toast.makeText(getContext(), "Please sign in to chat", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Please sign in to chat", Toast.LENGTH_SHORT).show();
             getParentFragmentManager().popBackStack();
             return view;
         }
@@ -193,13 +206,38 @@ public class ConversationFragment extends Fragment {
         messagesRecyclerView.setAdapter(messageAdapter);
 
         sendButton.setOnClickListener(v -> sendTextMessage());
-        attachImageButton.setOnClickListener(v -> requestMediaPermission("image"));
-        attachVideoButton.setOnClickListener(v -> requestMediaPermission("video"));
-        shareLocationButton.setOnClickListener(v -> requestLocationPermission());
+        attachButton.setOnClickListener(v -> showAttachmentMenu());
+        cameraButton.setOnClickListener(v -> requestCameraPermission());
 
         loadMessages();
 
         return view;
+    }
+
+    private void navigateToProfile() {
+        ViewProfileFragment viewProfileFragment = ViewProfileFragment.newInstance(otherUserId);
+        FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragment_container, viewProfileFragment); // Replace with your container ID
+        transaction.addToBackStack(null);
+        transaction.commit();
+    }
+
+    private void showAttachmentMenu() {
+        String[] options = {"Share Image", "Share Location"};
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setTitle("Choose an option");
+        builder.setItems(options, (dialog, which) -> {
+            switch (which) {
+                case 0: // Share Image
+                    requestMediaPermission("image");
+                    break;
+                case 1: // Share Location
+                    requestLocationPermission();
+                    break;
+            }
+        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+        builder.show();
     }
 
     private String generateChatId(String userId1, String userId2) {
@@ -213,20 +251,20 @@ public class ConversationFragment extends Fragment {
     private void sendTextMessage() {
         String messageText = messageInput.getText().toString().trim();
         if (messageText.isEmpty()) {
-            Toast.makeText(getContext(), "Enter a message", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Enter a message", Toast.LENGTH_SHORT).show();
             return;
         }
 
         FirebaseUser user = mAuth.getCurrentUser();
         if (user == null) {
-            Toast.makeText(getContext(), "Please sign in", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Please sign in", Toast.LENGTH_SHORT).show();
             return;
         }
 
         String messageId = chatsRef.child(chatId).child("messages").push().getKey();
         if (messageId == null) {
             Log.e(TAG, "Failed to generate messageId");
-            Toast.makeText(getContext(), "Failed to send message", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Failed to send message", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -236,7 +274,7 @@ public class ConversationFragment extends Fragment {
 
     private void requestMediaPermission(String mediaType) {
         String permission = android.os.Build.VERSION.SDK_INT >= 33 ?
-                (mediaType.equals("image") ? Manifest.permission.READ_MEDIA_IMAGES : Manifest.permission.READ_MEDIA_VIDEO) :
+                Manifest.permission.READ_MEDIA_IMAGES :
                 Manifest.permission.READ_EXTERNAL_STORAGE;
 
         if (ContextCompat.checkSelfPermission(requireContext(), permission) == PackageManager.PERMISSION_GRANTED) {
@@ -246,59 +284,98 @@ public class ConversationFragment extends Fragment {
         }
     }
 
+    private void requestCameraPermission() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            openCamera();
+        } else {
+            requestPermissionLauncher.launch(Manifest.permission.CAMERA);
+        }
+    }
+
     private void openMediaPicker(String mediaType) {
         Intent intent = new Intent(Intent.ACTION_PICK);
-        intent.setType(mediaType.equals("image") ? "image/*" : "video/*");
-        (mediaType.equals("image") ? pickImageLauncher : pickVideoLauncher).launch(intent);
+        intent.setType("image/*");
+        try {
+            pickImageLauncher.launch(intent);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to open media picker for " + mediaType + ": " + e.getMessage(), e);
+            Toast.makeText(requireContext(), "Cannot open media picker", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void openCamera() {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        try {
+            capturePhotoLauncher.launch(intent);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to open camera: " + e.getMessage(), e);
+            Toast.makeText(requireContext(), "Cannot open camera", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void sendMedia(Uri mediaUri, String mediaType) {
         FirebaseUser user = mAuth.getCurrentUser();
         if (user == null) {
-            Toast.makeText(getContext(), "Please sign in", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Please sign in", Toast.LENGTH_SHORT).show();
             return;
         }
 
         String messageId = chatsRef.child(chatId).child("messages").push().getKey();
         if (messageId == null) {
             Log.e(TAG, "Failed to generate messageId");
-            Toast.makeText(getContext(), "Failed to send " + mediaType, Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Failed to send " + mediaType, Toast.LENGTH_SHORT).show();
             return;
         }
 
         try {
-            String base64String;
-            if (mediaType.equals("image")) {
-                Bitmap bitmap = BitmapFactory.decodeStream(requireContext().getContentResolver().openInputStream(mediaUri));
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 50, baos);
-                byte[] bytes = baos.toByteArray();
-                base64String = Base64.encodeToString(bytes, Base64.DEFAULT);
-            } else {
-                InputStream inputStream = requireContext().getContentResolver().openInputStream(mediaUri);
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                byte[] buffer = new byte[1024];
-                int bytesRead;
-                int maxSize = 5 * 1024 * 1024; // 5MB limit
-                int totalBytes = 0;
-                while ((bytesRead = inputStream.read(buffer)) != -1 && totalBytes < maxSize) {
-                    baos.write(buffer, 0, bytesRead);
-                    totalBytes += bytesRead;
-                }
-                inputStream.close();
-                if (totalBytes >= maxSize) {
-                    Toast.makeText(getContext(), "Video too large (max 5MB)", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                base64String = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
+            Bitmap bitmap = BitmapFactory.decodeStream(requireContext().getContentResolver().openInputStream(mediaUri));
+            if (bitmap == null) {
+                Log.e(TAG, "Failed to decode image from URI: " + mediaUri);
+                Toast.makeText(requireContext(), "Invalid image file", Toast.LENGTH_SHORT).show();
+                return;
             }
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 50, baos);
+            byte[] bytes = baos.toByteArray();
+            String base64String = Base64.encodeToString(bytes, Base64.DEFAULT);
+            Log.d(TAG, "Image Base64 size: " + (bytes.length / 1024) + " KB");
 
             Message message = new Message(user.getUid(), mediaType, null, base64String, null, null, System.currentTimeMillis());
             sendMessageToFirebase(messageId, message);
-            Log.d(TAG, mediaType + " sent as Base64");
+            Log.d(TAG, "Image sent successfully, Base64 length: " + base64String.length());
         } catch (Exception e) {
             Log.e(TAG, "Failed to process " + mediaType + ": " + e.getMessage(), e);
-            Toast.makeText(getContext(), "Failed to send " + mediaType, Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Failed to send " + mediaType, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void sendCameraPhoto(Bitmap photo) {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user == null) {
+            Toast.makeText(requireContext(), "Please sign in", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String messageId = chatsRef.child(chatId).child("messages").push().getKey();
+        if (messageId == null) {
+            Log.e(TAG, "Failed to generate messageId");
+            Toast.makeText(requireContext(), "Failed to send photo", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            photo.compress(Bitmap.CompressFormat.JPEG, 50, baos);
+            byte[] bytes = baos.toByteArray();
+            String base64String = Base64.encodeToString(bytes, Base64.DEFAULT);
+            Log.d(TAG, "Camera photo Base64 size: " + (bytes.length / 1024) + " KB");
+
+            Message message = new Message(user.getUid(), "image", null, base64String, null, null, System.currentTimeMillis());
+            sendMessageToFirebase(messageId, message);
+            Log.d(TAG, "Camera photo sent successfully, Base64 length: " + base64String.length());
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to process camera photo: " + e.getMessage(), e);
+            Toast.makeText(requireContext(), "Failed to send photo", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -313,13 +390,13 @@ public class ConversationFragment extends Fragment {
     private void shareLocation() {
         FirebaseUser user = mAuth.getCurrentUser();
         if (user == null) {
-            Toast.makeText(getContext(), "Please sign in", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Please sign in", Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Log.w(TAG, "Location permission not granted");
-            Toast.makeText(getContext(), "Location permission required", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Location permission required", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -330,7 +407,7 @@ public class ConversationFragment extends Fragment {
                             String messageId = chatsRef.child(chatId).child("messages").push().getKey();
                             if (messageId == null) {
                                 Log.e(TAG, "Failed to generate messageId");
-                                Toast.makeText(getContext(), "Failed to share location", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(requireContext(), "Failed to share location", Toast.LENGTH_SHORT).show();
                                 return;
                             }
 
@@ -338,16 +415,16 @@ public class ConversationFragment extends Fragment {
                             sendMessageToFirebase(messageId, message);
                             Log.d(TAG, "Location shared: " + location.getLatitude() + ", " + location.getLongitude());
                         } else {
-                            Toast.makeText(getContext(), "Unable to get location", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(requireContext(), "Unable to get location", Toast.LENGTH_SHORT).show();
                         }
                     })
                     .addOnFailureListener(e -> {
                         Log.e(TAG, "Failed to get location: " + e.getMessage(), e);
-                        Toast.makeText(getContext(), "Failed to share location", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), "Failed to share location", Toast.LENGTH_SHORT).show();
                     });
         } catch (SecurityException e) {
             Log.e(TAG, "SecurityException getting location: " + e.getMessage(), e);
-            Toast.makeText(getContext(), "Location access denied", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Location access denied", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -363,14 +440,14 @@ public class ConversationFragment extends Fragment {
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Failed to send message: " + e.getMessage(), e);
-                    Toast.makeText(getContext(), "Failed to send message", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "Failed to send message", Toast.LENGTH_SHORT).show();
                 });
     }
 
     private void loadMessages() {
         if (chatId.isEmpty()) {
             Log.w(TAG, "Cannot load messages: Invalid chatId");
-            Toast.makeText(getContext(), "Cannot load messages", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Cannot load messages", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -396,12 +473,11 @@ public class ConversationFragment extends Fragment {
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Log.e(TAG, "Failed to load messages: " + error.getMessage());
-                Toast.makeText(getContext(), "Failed to load messages: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Failed to load messages: " + error.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
 }
-
 class Message {
     private String senderId;
     private String type; // "text", "image", "video", "location"
