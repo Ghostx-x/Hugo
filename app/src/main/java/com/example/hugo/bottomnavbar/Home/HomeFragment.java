@@ -1,8 +1,11 @@
 package com.example.hugo.bottomnavbar.Home;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
@@ -23,6 +26,9 @@ import androidx.fragment.app.Fragment;
 
 import com.example.hugo.R;
 import com.example.hugo.bottomnavbar.Profile.ProfileFragment;
+import com.google.android.material.badge.BadgeDrawable;
+import com.google.android.material.badge.BadgeUtils;
+import com.google.android.material.badge.ExperimentalBadgeUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -35,7 +41,9 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
 
+@ExperimentalBadgeUtils // Apply annotation at class level
 public class HomeFragment extends Fragment {
 
     private static final String TAG = "HomeFragment";
@@ -44,6 +52,7 @@ public class HomeFragment extends Fragment {
     private DatabaseReference databaseRef;
     private BottomNavigationView bottomNavigationView;
     private ShapeableImageView smallProfileIcon, chatButton;
+    private BadgeDrawable chatBadge; // Store badge instance to manage it
 
     @Nullable
     @Override
@@ -63,6 +72,7 @@ public class HomeFragment extends Fragment {
 
         chatButton = view.findViewById(R.id.chatButton);
         chatButton.setOnClickListener(v -> navigateToChatFragment());
+        updateChatBadge(); // Call here after chatButton is initialized
 
         CardView cardView1 = view.findViewById(R.id.card_best_foods);
         CardView cardView2 = view.findViewById(R.id.card_behavior_training);
@@ -101,6 +111,41 @@ public class HomeFragment extends Fragment {
         loadUserData();
 
         return view;
+    }
+
+    @ExperimentalBadgeUtils // Optional: Can move to class level as done above
+    private void updateChatBadge() {
+        SharedPreferences prefs = requireContext().getSharedPreferences("ChatPrefs", Context.MODE_PRIVATE);
+        boolean hasUnreadMessages = prefs.getBoolean("hasUnreadMessages", false);
+
+        if (hasUnreadMessages) {
+            int totalUnread = 0;
+            Map<String, ?> allEntries = prefs.getAll();
+            for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
+                if (entry.getKey().startsWith("unread_")) {
+                    totalUnread += (int) entry.getValue();
+                }
+            }
+
+            // Create or update badge
+            if (chatBadge == null) {
+                chatBadge = BadgeDrawable.create(requireContext());
+                BadgeUtils.attachBadgeDrawable(chatBadge, chatButton, null);
+            }
+            chatBadge.setNumber(totalUnread);
+            chatBadge.setBackgroundColor(Color.RED);
+            chatBadge.setBadgeGravity(BadgeDrawable.TOP_END);
+            chatBadge.setHorizontalOffset(10);
+            chatBadge.setVerticalOffset(10);
+            chatBadge.setVisible(true);
+        } else {
+            // Remove badge if it exists
+            if (chatBadge != null) {
+                chatBadge.setVisible(false); // Hide the badge
+                // Note: BadgeUtils.detachBadgeFromAnchor(chatButton) is not directly supported; hiding is sufficient
+                chatBadge = null; // Reset for next use
+            }
+        }
     }
 
     private void openStoryFragment(ArrayList<Integer> images) {
@@ -174,7 +219,6 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    // Helper method to transform a bitmap into a circular shape
     private Bitmap getCircularBitmap(Bitmap bitmap) {
         int size = Math.min(bitmap.getWidth(), bitmap.getHeight());
         Bitmap output = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
@@ -189,6 +233,12 @@ public class HomeFragment extends Fragment {
         paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
         canvas.drawBitmap(bitmap, rect, rect, paint);
         return output;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateChatBadge();
     }
 
     @Override

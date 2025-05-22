@@ -1,5 +1,6 @@
 package com.example.hugo;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -9,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import com.example.hugo.bottomnavbar.Home.ConversationFragment;
 import com.example.hugo.bottomnavbar.Home.HomeFragment;
 import com.example.hugo.bottomnavbar.Home.StoryFragment;
 import com.example.hugo.bottomnavbar.Search.SearchFragment;
@@ -93,6 +95,19 @@ public class MainActivity extends AppCompatActivity {
             hideLoadingIndicator();
             return true;
         });
+
+        Intent intent = getIntent();
+        if (intent != null && intent.hasExtra("navigateTo")) {
+            String navigateTo = intent.getStringExtra("navigateTo");
+            if ("ConversationFragment".equals(navigateTo)) {
+                String otherUserId = intent.getStringExtra("otherUserId");
+                String otherUserName = intent.getStringExtra("otherUserName");
+                Fragment fragment = ConversationFragment.newInstance(otherUserId, otherUserName);
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, fragment)
+                        .commit();
+            }
+        }
 
         // Ensure navigation bar visibility on back stack changes
         getSupportFragmentManager().addOnBackStackChangedListener(() -> {

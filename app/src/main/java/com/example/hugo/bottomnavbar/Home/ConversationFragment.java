@@ -43,7 +43,12 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import org.json.JSONObject;
+
 import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -437,11 +442,67 @@ public class ConversationFragment extends Fragment {
                         add(otherUserId);
                     }});
                     Log.d(TAG, "Message sent successfully");
+
+                    // Fetch recipient's FCM token and send notification
+                    fetchRecipientTokenAndSendNotification(message);
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Failed to send message: " + e.getMessage(), e);
                     Toast.makeText(requireContext(), "Failed to send message", Toast.LENGTH_SHORT).show();
                 });
+    }
+
+    private void fetchRecipientTokenAndSendNotification(Message message) {
+        // Fetch recipient's FCM token (you need to store tokens in Firebase under Users)
+        DatabaseReference recipientRef = FirebaseDatabase.getInstance().getReference("Users").child(otherUserId);
+        recipientRef.child("fcmToken").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                String recipientToken = snapshot.getValue(String.class);
+                if (recipientToken != null) {
+                    // Send push notification via a server or directly using FCM REST API
+                    sendPushNotification(recipientToken, message);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e(TAG, "Failed to fetch recipient token: " + error.getMessage());
+            }
+        });
+    }
+
+    private void sendPushNotification(String recipientToken, Message message) {
+        // Use an HTTP client to send a POST request to FCM
+        // This is a simplified example; in production, use a server to send notifications
+        new Thread(() -> {
+            try {
+                URL url = new URL("https://fcm.googleapis.com/fcm/send");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json");
+                conn.setRequestProperty("Authorization", "key=YOUR_FCM_SERVER_KEY"); // Replace with your server key
+                conn.setDoOutput(true);
+
+                JSONObject payload = new JSONObject();
+                payload.put("to", recipientToken);
+
+                JSONObject data = new JSONObject();
+                data.put("senderId", message.getSenderId());
+                data.put("senderName", otherUserName);
+                data.put("messageText", message.getMessage());
+                payload.put("data", data);
+
+                OutputStream os = conn.getOutputStream();
+                os.write(payload.toString().getBytes("UTF-8"));
+                os.close();
+
+                int responseCode = conn.getResponseCode();
+                Log.d(TAG, "FCM Response Code: " + responseCode);
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to send push notification: " + e.getMessage(), e);
+            }
+        }).start();
     }
 
     private void loadMessages() {
