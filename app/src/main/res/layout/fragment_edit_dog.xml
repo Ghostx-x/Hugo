@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@color/milky"
+    android:elevation="2dp">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp">
+
+                <ImageView
+                    android:id="@+id/back_arrow"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/arrow_back"
+                    android:contentDescription="Back to Profile"
+                    android:layout_marginEnd="15dp" />
+
+                <TextView
+                    android:id="@+id/my_bookings_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/quicksand_bold"
+                    android:text="Edit Dog"
+                    android:textColor="@color/black"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:gravity="center" />
+            </LinearLayout>
+
+            <EditText
+                android:id="@+id/dog_name_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Dog Name *"
+                android:textColor="@color/black"
+                android:textColorHint="#666666"
+                android:fontFamily="@font/quicksand_regular"
+                android:inputType="text"
+                android:padding="12dp"
+                android:background="@drawable/edit_text"/>
+
+            <AutoCompleteTextView
+                android:id="@+id/dog_breed_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Select Breed *"
+                android:textColor="@color/black"
+                android:textColorHint="#666666"
+                android:fontFamily="@font/quicksand_regular"
+                android:padding="12dp"
+                android:background="@drawable/edit_text"
+                android:layout_marginTop="8dp"/>
+
+            <TextView
+                android:id="@+id/dog_birth_date_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Birth Date (DD/MM/YYYY) *"
+                android:textColor="@color/black"
+                android:textColorHint="#666666"
+                android:fontFamily="@font/quicksand_regular"
+                android:gravity="center"
+                android:padding="12dp"
+                android:background="@drawable/edit_text"
+                android:layout_marginTop="8dp"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Gender *"
+                android:textColor="@color/black"
+                android:fontFamily="@font/quicksand_bold"
+                android:textSize="16sp"
+                android:gravity="center"
+                android:paddingTop="16dp"/>
+
+            <RadioGroup
+                android:id="@+id/edit_dog_gender_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/gender_male"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Male"
+                    android:textColor="@color/black"
+                    android:fontFamily="@font/quicksand_regular"
+                    android:layout_weight="1"/>
+
+                <RadioButton
+                    android:id="@+id/gender_female"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Female"
+                    android:textColor="@color/black"
+                    android:fontFamily="@font/quicksand_regular"
+                    android:layout_weight="1"/>
+            </RadioGroup>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Size *"
+                android:textColor="@color/black"
+                android:fontFamily="@font/quicksand_bold"
+                android:textSize="16sp"
+                android:gravity="center"
+                android:paddingTop="16dp"/>
+
+            <RadioGroup
+                android:id="@+id/dog_size_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/size_small"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Small (0-4 kg)"
+                    android:textColor="@color/black"
+                    android:fontFamily="@font/quicksand_regular"
+                    android:layout_weight="1"/>
+
+                <RadioButton
+                    android:id="@+id/size_medium"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Medium (5-15 kg)"
+                    android:textColor="@color/black"
+                    android:fontFamily="@font/quicksand_regular"
+                    android:layout_weight="1"/>
+
+                <RadioButton
+                    android:id="@+id/size_large"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Large (16-40 kg)"
+                    android:textColor="@color/black"
+                    android:fontFamily="@font/quicksand_regular"
+                    android:layout_weight="1"/>
+            </RadioGroup>
+
+            <EditText
+                android:id="@+id/dog_description_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Description"
+                android:textColor="@color/black"
+                android:textColorHint="#666666"
+                android:fontFamily="@font/quicksand_regular"
+                android:inputType="textMultiLine"
+                android:minLines="3"
+                android:padding="12dp"
+                android:background="@drawable/edit_text"
+                android:layout_marginTop="8dp"/>
+
+            <Button
+                android:id="@+id/pick_image_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Pick Dog Image"
+                android:backgroundTint="@color/darkblue"
+                android:textColor="#FFFFFF"
+                android:fontFamily="@font/quicksand_regular"
+                android:layout_marginTop="16dp"/>
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/dog_image_preview"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_gravity="center"
+                android:visibility="gone"
+                android:layout_marginTop="8dp"
+                android:scaleType="centerCrop"
+                app:shapeAppearanceOverlay="@style/CircularShape"/>
+
+            <Button
+                android:id="@+id/save_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Save Changes"
+                android:backgroundTint="@color/darkblue"
+                android:textColor="#FFFFFF"
+                android:fontFamily="@font/quicksand_regular"
+                android:layout_marginTop="16dp"/>
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

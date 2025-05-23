@@ -177,12 +177,8 @@ public class ProfileFragment extends Fragment {
 
         if (myDogsSection != null) {
             myDogsSection.setOnClickListener(v -> {
-                if (getActivity() == null) {
-                    Toast.makeText(getContext(), "Navigation error: Activity not found", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                if (!isAdded() || isDetached()) {
-                    Toast.makeText(getContext(), "Navigation error: Fragment not attached", Toast.LENGTH_SHORT).show();
+                if (getActivity() == null || !isAdded() || isDetached()) {
+                    Toast.makeText(getContext(), "Navigation error: Fragment or activity not ready", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 try {
@@ -193,6 +189,9 @@ public class ProfileFragment extends Fragment {
                     FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
                     if (fragmentManager.isStateSaved()) {
                         Toast.makeText(getContext(), "Cannot navigate: App state is saved", Toast.LENGTH_SHORT).show();
+                        if (getActivity() instanceof MainActivity) {
+                            ((MainActivity) getActivity()).hideLoadingIndicator();
+                        }
                         return;
                     }
                     DogFragment dogFragment = new DogFragment();
@@ -200,17 +199,18 @@ public class ProfileFragment extends Fragment {
                     transaction.replace(R.id.fragment_container, dogFragment);
                     transaction.addToBackStack("DogFragment");
                     transaction.commit();
+                    // Pass callback to hide loading indicator
+                    dogFragment.setLoadingCallback(() -> {
+                        if (getActivity() instanceof MainActivity) {
+                            ((MainActivity) getActivity()).hideLoadingIndicator();
+                            ((MainActivity) getActivity()).showBottomNavigationBar();
+                        }
+                    });
                 } catch (Exception e) {
                     Toast.makeText(getContext(), "Error navigating to My Dogs: " + e.getMessage(), Toast.LENGTH_LONG).show();
                     if (getActivity() instanceof MainActivity) {
                         ((MainActivity) getActivity()).hideLoadingIndicator();
                     }
-                } finally {
-                    handler.postDelayed(() -> {
-                        if (getActivity() instanceof MainActivity && getActivity() != null) {
-                            ((MainActivity) getActivity()).hideLoadingIndicator();
-                        }
-                    }, 3000);
                 }
             });
         }

@@ -1,27 +1,49 @@
 package com.example.hugo.bottomnavbar.Profile;
 
+import static android.content.ContentValues.TAG;
+
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.hugo.R;
+import com.example.hugo.bottomnavbar.Search.Dog;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 public class DogAdapter extends RecyclerView.Adapter<DogAdapter.DogViewHolder> {
 
     private final List<Dog> dogList;
+    private Context context;
+    private OnDogDeleteListener deleteListener;
+    private Map<String, String> dogKeys; // Reference to DogFragment's key map
 
-    public DogAdapter(List<Dog> dogList) {
+    public interface OnDogDeleteListener {
+        void onDogDelete(Dog dog, int position);
+    }
+
+    public DogAdapter(List<Dog> dogList, Context context, OnDogDeleteListener deleteListener, Map<String, String> dogKeys) {
         this.dogList = dogList;
+        this.context = context;
+        this.deleteListener = deleteListener;
+        this.dogKeys = dogKeys;
     }
 
     @NonNull
@@ -34,24 +56,56 @@ public class DogAdapter extends RecyclerView.Adapter<DogAdapter.DogViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull DogViewHolder holder, int position) {
         Dog dog = dogList.get(position);
-        setTextSafely(holder.nameText, "Name: " + dog.getName());
-        setTextSafely(holder.breedText, "Breed: " + dog.getBreed());
-        setTextSafely(holder.birthDateText, "Birth Date: " + dog.getBirthDate());
-        setTextSafely(holder.genderText, "Gender: " + dog.getGender());
-        setTextSafely(holder.sizeText, "Size: " + dog.getSize());
+        setTextSafely(holder.nameText, "Name: " + (dog.getName() != null ? dog.getName() : "N/A"));
+        setTextSafely(holder.breedText, "Breed: " + (dog.getBreed() != null ? dog.getBreed() : "N/A"));
+        setTextSafely(holder.birthDateText, "Birth Date: " + (dog.getBirthDate() != null ? dog.getBirthDate() : "N/A"));
+        setTextSafely(holder.genderText, "Gender: " + (dog.getGender() != null ? dog.getGender() : "N/A"));
+        setTextSafely(holder.sizeText, "Size: " + (dog.getSize() != null ? dog.getSize() : "N/A"));
         setTextSafely(holder.descriptionText, "Description: " + (dog.getDescription() != null ? dog.getDescription() : "N/A"));
+
+        // Load image from Base64 if available
         if (dog.getImageBase64() != null && !dog.getImageBase64().isEmpty()) {
             try {
                 byte[] decodedBytes = Base64.decode(dog.getImageBase64(), Base64.DEFAULT);
                 Bitmap bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
-                holder.dogImage.setImageBitmap(bitmap);
-                holder.dogImage.setVisibility(View.VISIBLE);
+                if (bitmap != null) {
+                    holder.dogImage.setImageBitmap(bitmap);
+                    holder.dogImage.setVisibility(View.VISIBLE);
+                } else {
+                    holder.dogImage.setVisibility(View.GONE);
+                }
             } catch (Exception e) {
                 holder.dogImage.setVisibility(View.GONE);
             }
         } else {
             holder.dogImage.setVisibility(View.GONE);
         }
+
+        // Edit button
+        holder.editIcon.setOnClickListener(v -> {
+            if (context instanceof FragmentActivity) {
+                FragmentActivity activity = (FragmentActivity) context;
+                String key = dogKeys.get(dog.getName());
+                if (key != null) {
+                    EditDogFragment editDogFragment = EditDogFragment.newInstance(dog, key);
+                    activity.getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.fragment_container, editDogFragment)
+                            .addToBackStack("EditDogFragment")
+                            .commit();
+                } else {
+                    Log.w(TAG, "No key found for dog: " + dog.getName());
+                    Toast.makeText(context, "Unable to edit dog", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        // Delete button
+        holder.deleteIcon.setOnClickListener(v -> {
+            if (deleteListener != null) {
+                deleteListener.onDogDelete(dog, position);
+            }
+        });
     }
 
     private void setTextSafely(TextView textView, String text) {
@@ -62,12 +116,12 @@ public class DogAdapter extends RecyclerView.Adapter<DogAdapter.DogViewHolder> {
 
     @Override
     public int getItemCount() {
-        return dogList.size();
+        return dogList != null ? dogList.size() : 0;
     }
 
     static class DogViewHolder extends RecyclerView.ViewHolder {
         TextView nameText, breedText, birthDateText, genderText, sizeText, descriptionText;
-        ImageView dogImage;
+        ImageView dogImage, editIcon, deleteIcon;
 
         DogViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -78,6 +132,8 @@ public class DogAdapter extends RecyclerView.Adapter<DogAdapter.DogViewHolder> {
             sizeText = itemView.findViewById(R.id.dog_size_text);
             descriptionText = itemView.findViewById(R.id.dog_description_text);
             dogImage = itemView.findViewById(R.id.dog_image);
+            editIcon = itemView.findViewById(R.id.edit_icon);
+            deleteIcon = itemView.findViewById(R.id.delete_icon);
         }
     }
 }

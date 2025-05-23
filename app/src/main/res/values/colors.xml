@@ -12,4 +12,5 @@
     <color name="nav_unselected">#757575</color>
     <color name="nav_ripple">#33000000</color>
     <color name="primary">#6200EE</color>
+    <color name="red">#9E2A2B</color>
 </resources>
