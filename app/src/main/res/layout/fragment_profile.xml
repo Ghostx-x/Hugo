@@ -7,6 +7,7 @@
     android:background="@color/milky"
     android:padding="16dp">
 
+
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/profile_image"
         android:layout_width="100dp"
@@ -16,6 +17,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
 
     <TextView
         android:id="@+id/profile_name"
@@ -30,6 +32,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp" />
 
+
     <TextView
         android:id="@+id/profile_bio"
         android:layout_width="wrap_content"
@@ -40,6 +43,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="8dp" />
+
 
     <TextView
         android:id="@+id/profile_location"
@@ -54,11 +58,12 @@
         android:paddingRight="20dp"
         android:layout_marginTop="8dp" />
 
+
     <TextView
-        android:id="@+id/availability_text"
+        android:id="@+id/profile_price"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Availability: Not set"
+        android:text="Price per Hour: Not set"
         android:visibility="gone"
         android:textColor="@color/black"
         android:paddingLeft="20dp"
@@ -67,6 +72,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="8dp" />
+
 
     <Button
         android:id="@+id/edit_profile_button"
@@ -78,7 +84,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         android:backgroundTint="@color/darkblue"
-        app:layout_constraintTop_toBottomOf="@id/availability_text" />
+        app:layout_constraintTop_toBottomOf="@id/profile_price" />
+
 
     <LinearLayout
         android:id="@+id/my_dogs_section"
@@ -92,6 +99,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp">
 
+
         <TextView
             android:id="@+id/my_dogs_title"
             android:layout_width="0dp"
@@ -102,12 +110,14 @@
             android:textColor="@color/black"
             android:textStyle="bold" />
 
+
         <ImageView
             android:id="@+id/my_dogs_arrow"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@drawable/arrow_next" />
     </LinearLayout>
+
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/dog_recycler_view"
@@ -117,6 +127,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="8dp" />
+
 
     <LinearLayout
         android:id="@+id/my_bookings_section"
@@ -130,6 +141,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp">
 
+
         <TextView
             android:id="@+id/my_bookings_title"
             android:layout_width="0dp"
@@ -140,12 +152,14 @@
             android:textColor="@color/black"
             android:textStyle="bold" />
 
+
         <ImageView
             android:id="@+id/my_bookings_arrow"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@drawable/arrow_next" />
     </LinearLayout>
+
 
     <LinearLayout
         android:id="@+id/my_orders_section"
@@ -161,6 +175,7 @@
         android:layout_marginTop="20dp"
         android:visibility="gone">
 
+
         <TextView
             android:id="@+id/my_orders_title"
             android:layout_width="0dp"
@@ -171,12 +186,14 @@
             android:textColor="@color/black"
             android:textStyle="bold" />
 
+
         <ImageView
             android:id="@+id/my_orders_arrow"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@drawable/arrow_next" />
     </LinearLayout>
+
 
     <ProgressBar
         android:id="@+id/profile_loading_indicator"
@@ -187,5 +204,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -32,12 +32,12 @@ import java.util.Map;
 public class EditProfileDialog extends Dialog {
 
     private static final String TAG = "EditProfileDialog";
-    private TextInputEditText usernameInput, bioInput;
+    private TextInputEditText usernameInput, bioInput, priceInput;
     private Button selectLocationButton, saveButton;
     private TextView selectedLocationText;
     private LinearLayout availabilityContainer;
     private String currentUsername, currentBio, currentLocationName, userType;
-    private double currentLatitude, currentLongitude;
+    private double currentLatitude, currentLongitude, currentPrice;
     private Map<String, List<String>> availability;
     private OnProfileUpdateListener updateListener;
     private OnSelectLocationListener selectLocationListener;
@@ -47,8 +47,8 @@ public class EditProfileDialog extends Dialog {
 
     public EditProfileDialog(Context context, String currentUsername, String currentBio, String currentLocationName,
                              double currentLatitude, double currentLongitude, String userType,
-                             Map<String, List<String>> availability, OnProfileUpdateListener updateListener,
-                             OnSelectLocationListener selectLocationListener) {
+                             Map<String, List<String>> availability, double currentPrice,
+                             OnProfileUpdateListener updateListener, OnSelectLocationListener selectLocationListener) {
         super(context, R.style.CustomDialog);
         this.currentUsername = currentUsername;
         this.currentBio = currentBio;
@@ -57,9 +57,10 @@ public class EditProfileDialog extends Dialog {
         this.currentLongitude = currentLongitude;
         this.userType = userType;
         this.availability = availability != null ? new HashMap<>(availability) : new HashMap<>();
+        this.currentPrice = currentPrice;
         this.updateListener = updateListener;
         this.selectLocationListener = selectLocationListener;
-        Log.d(TAG, "EditProfileDialog created: username=" + currentUsername + ", location=" + currentLocationName);
+        Log.d(TAG, "EditProfileDialog created: username=" + currentUsername + ", location=" + currentLocationName + ", userType=" + userType);
     }
 
     @Override
@@ -71,21 +72,35 @@ public class EditProfileDialog extends Dialog {
 
         usernameInput = view.findViewById(R.id.username_input);
         bioInput = view.findViewById(R.id.bio_input);
+        priceInput = view.findViewById(R.id.price_input);
         selectLocationButton = view.findViewById(R.id.select_location_button);
         selectedLocationText = view.findViewById(R.id.selected_location_text);
         saveButton = view.findViewById(R.id.save_button);
         availabilityContainer = view.findViewById(R.id.availability_container);
 
+        if (priceInput == null) {
+            Log.e(TAG, "price_input is null - check dialog_edit_profile.xml");
+        } else {
+            Log.d(TAG, "price_input initialized successfully");
+        }
+
         usernameInput.setText(currentUsername);
         bioInput.setText(currentBio);
+        priceInput.setText(currentPrice > 0 ? String.valueOf(currentPrice) : "");
         selectedLocationText.setText(currentLocationName.isEmpty() ? "No location selected" : currentLocationName);
+        Log.d(TAG, "Price input set to: " + priceInput.getText().toString());
 
-        // Setup availability UI for service providers
+        // Force price input to be visible for testing
+        priceInput.setVisibility(View.VISIBLE);
+        Log.d(TAG, "Price input forced to VISIBLE, userType: " + userType + ", isServiceProvider: " + isServiceProvider(userType));
+
         if (isServiceProvider(userType)) {
             setupAvailabilityUI();
             availabilityContainer.setVisibility(View.VISIBLE);
+            Log.d(TAG, "Availability container set to VISIBLE");
         } else {
             availabilityContainer.setVisibility(View.GONE);
+            Log.d(TAG, "Availability container set to GONE");
         }
 
         selectLocationButton.setOnClickListener(v -> {
@@ -99,6 +114,20 @@ public class EditProfileDialog extends Dialog {
             Log.d(TAG, "Save button clicked");
             String newUsername = usernameInput.getText().toString().trim();
             String newBio = bioInput.getText().toString().trim();
+            String priceString = priceInput.getText().toString().trim();
+            double newPrice = 0.0;
+            if (!priceString.isEmpty()) {
+                try {
+                    newPrice = Double.parseDouble(priceString);
+                    if (newPrice < 0) {
+                        Toast.makeText(getContext(), "Price cannot be negative", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                } catch (NumberFormatException e) {
+                    Toast.makeText(getContext(), "Invalid price format", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+            }
 
             if (newUsername.isEmpty()) {
                 Log.w(TAG, "Username is empty");
@@ -106,7 +135,6 @@ public class EditProfileDialog extends Dialog {
                 return;
             }
 
-            // Use the class-level availability map
             Map<String, List<String>> newAvailability = isServiceProvider(userType) ? availability : new HashMap<>();
 
             FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -115,6 +143,9 @@ public class EditProfileDialog extends Dialog {
                 Toast.makeText(getContext(), "Please sign in", Toast.LENGTH_SHORT).show();
                 return;
             }
+
+            final String finalUsername = newUsername;
+            final double finalPrice = newPrice;
 
             String userId = user.getUid();
             DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(userId);
@@ -125,12 +156,13 @@ public class EditProfileDialog extends Dialog {
             updates.put("latitude", currentLatitude);
             updates.put("longitude", currentLongitude);
             updates.put("availability", newAvailability);
+            updates.put("pricePerHour", newPrice);
 
             userRef.updateChildren(updates)
                     .addOnSuccessListener(aVoid -> {
-                        Log.d(TAG, "Profile updated successfully: username=" + newUsername + ", availability=" + newAvailability);
-                        updateListener.onProfileUpdated(newUsername, newBio, currentLocationName,
-                                currentLatitude, currentLongitude, newAvailability);
+                        Log.d(TAG, "Profile updated successfully: username=" + finalUsername + ", price=" + finalPrice);
+                        updateListener.onProfileUpdated(finalUsername, newBio, currentLocationName,
+                                currentLatitude, currentLongitude, newAvailability, finalPrice);
                         Toast.makeText(getContext(), "Profile saved", Toast.LENGTH_SHORT).show();
                         dismiss();
                     })
@@ -222,7 +254,8 @@ public class EditProfileDialog extends Dialog {
     }
 
     public interface OnProfileUpdateListener {
-        void onProfileUpdated(String username, String bio, String locationName, double latitude, double longitude, Map<String, List<String>> availability);
+        void onProfileUpdated(String username, String bio, String locationName, double latitude, double longitude,
+                              Map<String, List<String>> availability, double pricePerHour);
     }
 
     public interface OnSelectLocationListener {

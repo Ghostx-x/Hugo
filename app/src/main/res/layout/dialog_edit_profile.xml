@@ -8,7 +8,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp"
+        android:padding="8dp"
         android:background="@color/milky">
 
         <!-- Username Input -->
@@ -16,7 +16,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Username"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="8dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/username_input"
@@ -32,7 +32,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Bio"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="8dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/bio_input"
@@ -41,6 +41,24 @@
                 android:fontFamily="@font/quicksand_semibold"
                 android:textColor="@color/black"
                 android:textSize="16sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Price per Hour Input -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Price per Hour (AMD)"
+            android:layout_marginBottom="8dp"
+            android:visibility="visible">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/price_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/quicksand_semibold"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                android:inputType="numberDecimal" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Location Selection -->
@@ -62,7 +80,7 @@
             android:backgroundTint="@color/darkblue"
             android:textColor="@color/milky"
             android:fontFamily="@font/quicksand_bold"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="8dp" />
 
         <!-- Availability Container -->
         <LinearLayout
@@ -71,7 +89,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:visibility="gone"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="8dp" />
 
         <!-- Save Button -->
         <Button

@@ -1,7 +1,9 @@
 package com.example.hugo.bottomnavbar.Search;
 
+
 import java.util.List;
 import java.util.Map;
+
 
 public class User {
     public String userId;
@@ -15,12 +17,15 @@ public class User {
     public String profileImageUrl;
     public Map<String, List<String>> availability;
     public Double ranking;
+    public double pricePerHour;
+
 
     public User() {}
 
+
     public User(String userId, String name, String bio, String userType, String locationName, double latitude,
                 double longitude, String profileImageBase64, String profileImageUrl,
-                Map<String, List<String>> availability, Double ranking) {
+                Map<String, List<String>> availability, Double ranking, double pricePerHour) {
         this.userId = userId;
         this.name = name;
         this.bio = bio;
@@ -32,19 +37,23 @@ public class User {
         this.profileImageUrl = profileImageUrl;
         this.availability = availability;
         this.ranking = ranking;
+        this.pricePerHour = pricePerHour;
     }
+
 
     public static class Dog {
         public String name;
         public String breed;
-        public String age; // Changed to String to handle Firebase data
+        public String age;
         public String profileImageUrl;
         public String imageBase64;
         public String birthday;
         public String gender;
         public String specialCare;
 
+
         public Dog() {}
+
 
         public Dog(String name, String breed, String age, String profileImageUrl, String imageBase64, String birthday, String gender, String specialCare) {
             this.name = name;
@@ -57,7 +66,7 @@ public class User {
             this.specialCare = specialCare;
         }
 
-        // Getters and setters
+
         public String getName() { return name; }
         public void setName(String name) { this.name = name; }
         public String getBreed() { return breed; }

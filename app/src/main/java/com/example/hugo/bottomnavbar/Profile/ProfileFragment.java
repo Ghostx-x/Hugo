@@ -1,5 +1,6 @@
 package com.example.hugo.bottomnavbar.Profile;
 
+
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -19,6 +20,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -27,6 +29,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+
 
 import com.example.hugo.MainActivity;
 import com.example.hugo.R;
@@ -41,18 +44,21 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 
+
 import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 public class ProfileFragment extends Fragment {
+
 
     private static final String TAG = "ProfileFragment";
     private FirebaseAuth mAuth;
     private DatabaseReference databaseRef;
     private ShapeableImageView profileImage;
-    private TextView profileName, profileBio, profileLocation, availabilityText;
+    private TextView profileName, profileBio, profileLocation, profilePrice;
     private Button editProfileButton;
     private LinearLayout myDogsSection, myBookingsSection, myOrdersSection;
     private ActivityResultLauncher<Intent> profileImagePickerLauncher;
@@ -61,9 +67,10 @@ public class ProfileFragment extends Fragment {
     private BottomNavigationView bottomNavigationView;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private String currentUsername, currentBio, currentLocationName, userType;
-    private double currentLatitude, currentLongitude;
+    private double currentLatitude, currentLongitude, currentPrice;
     private Map<String, List<String>> currentAvailability;
     private EditProfileDialog currentDialog;
+
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -78,6 +85,7 @@ public class ProfileFragment extends Fragment {
             return;
         }
         databaseRef = FirebaseDatabase.getInstance().getReference("Users").child(user.getUid());
+
 
         profileImagePickerLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
             if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
@@ -99,6 +107,7 @@ public class ProfileFragment extends Fragment {
             }
         });
 
+
         locationPickerLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
             if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
                 Intent data = result.getData();
@@ -117,6 +126,7 @@ public class ProfileFragment extends Fragment {
             }
         });
 
+
         permissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
             Boolean fineLocationGranted = result.getOrDefault(android.Manifest.permission.ACCESS_FINE_LOCATION, false);
             Boolean coarseLocationGranted = result.getOrDefault(android.Manifest.permission.ACCESS_COARSE_LOCATION, false);
@@ -129,10 +139,12 @@ public class ProfileFragment extends Fragment {
         });
     }
 
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_profile, container, false);
     }
+
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -141,14 +153,16 @@ public class ProfileFragment extends Fragment {
         profileName = view.findViewById(R.id.profile_name);
         profileBio = view.findViewById(R.id.profile_bio);
         profileLocation = view.findViewById(R.id.profile_location);
-        availabilityText = view.findViewById(R.id.availability_text);
+        profilePrice = view.findViewById(R.id.profile_price);
         editProfileButton = view.findViewById(R.id.edit_profile_button);
         myDogsSection = view.findViewById(R.id.my_dogs_section);
         myBookingsSection = view.findViewById(R.id.my_bookings_section);
         myOrdersSection = view.findViewById(R.id.my_orders_section);
 
+
         bottomNavigationView = getActivity().findViewById(R.id.bottom_navigation);
         bottomNavigationView.setVisibility(View.VISIBLE);
+
 
         myBookingsSection.setOnClickListener(v -> {
             getParentFragmentManager().beginTransaction()
@@ -157,12 +171,14 @@ public class ProfileFragment extends Fragment {
                     .commit();
         });
 
+
         myOrdersSection.setOnClickListener(v -> {
             getParentFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, new MyOrdersFragment())
                     .addToBackStack(null)
                     .commit();
         });
+
 
         if (profileImage != null) {
             profileImage.setOnClickListener(v -> {
@@ -171,9 +187,11 @@ public class ProfileFragment extends Fragment {
             });
         }
 
+
         if (editProfileButton != null) {
             editProfileButton.setOnClickListener(v -> showEditProfileDialog());
         }
+
 
         if (myDogsSection != null) {
             myDogsSection.setOnClickListener(v -> {
@@ -199,7 +217,6 @@ public class ProfileFragment extends Fragment {
                     transaction.replace(R.id.fragment_container, dogFragment);
                     transaction.addToBackStack("DogFragment");
                     transaction.commit();
-                    // Pass callback to hide loading indicator
                     dogFragment.setLoadingCallback(() -> {
                         if (getActivity() instanceof MainActivity) {
                             ((MainActivity) getActivity()).hideLoadingIndicator();
@@ -215,8 +232,10 @@ public class ProfileFragment extends Fragment {
             });
         }
 
+
         loadUserProfile();
     }
+
 
     private void showEditProfileDialog() {
         if (currentUsername == null) currentUsername = profileName != null ? profileName.getText().toString() : "";
@@ -225,13 +244,15 @@ public class ProfileFragment extends Fragment {
         if (currentAvailability == null) currentAvailability = new HashMap<>();
         if (userType == null) userType = "Dog Owner";
 
-        EditProfileDialog.OnProfileUpdateListener updateListener = (username, bio, locationName, latitude, longitude, availability) -> {
+
+        EditProfileDialog.OnProfileUpdateListener updateListener = (username, bio, locationName, latitude, longitude, availability, price) -> {
             this.currentUsername = username;
             this.currentBio = bio;
             this.currentLocationName = locationName;
             this.currentLatitude = latitude;
             this.currentLongitude = longitude;
             this.currentAvailability = availability;
+            this.currentPrice = price;
             if (profileName != null) {
                 profileName.setText(username);
             }
@@ -241,15 +262,16 @@ public class ProfileFragment extends Fragment {
             if (profileLocation != null) {
                 profileLocation.setText(locationName);
             }
-            if (availabilityText != null) {
-                if (availability != null && !availability.isEmpty()) {
-                    availabilityText.setText("Availability: " + availability.toString());
-                    availabilityText.setVisibility(View.VISIBLE);
+            if (profilePrice != null) {
+                if (price > 0 && isServiceProvider(userType)) {
+                    profilePrice.setText(String.format("Price per Hour: %.2f AMD", price));
+                    profilePrice.setVisibility(View.VISIBLE);
                 } else {
-                    availabilityText.setVisibility(View.GONE);
+                    profilePrice.setVisibility(View.GONE);
                 }
             }
         };
+
 
         EditProfileDialog.OnSelectLocationListener selectLocationListener = () -> {
             if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
@@ -264,6 +286,7 @@ public class ProfileFragment extends Fragment {
             }
         };
 
+
         currentDialog = new EditProfileDialog(
                 requireContext(),
                 currentUsername,
@@ -273,11 +296,13 @@ public class ProfileFragment extends Fragment {
                 currentLongitude,
                 userType,
                 currentAvailability,
+                currentPrice,
                 updateListener,
                 selectLocationListener
         );
         currentDialog.show();
     }
+
 
     private void loadUserProfile() {
         if (databaseRef == null) {
@@ -297,6 +322,8 @@ public class ProfileFragment extends Fragment {
                     String userTypeFromDB = snapshot.child("userType").getValue(String.class);
                     Double latitude = snapshot.child("latitude").getValue(Double.class);
                     Double longitude = snapshot.child("longitude").getValue(Double.class);
+                    Double price = snapshot.child("pricePerHour").getValue(Double.class);
+
 
                     currentUsername = username != null ? username : "Unknown";
                     currentBio = bio != null ? bio : "No bio set";
@@ -305,6 +332,8 @@ public class ProfileFragment extends Fragment {
                     userType = userTypeFromDB != null ? userTypeFromDB : "Dog Owner";
                     currentLatitude = latitude != null ? latitude : 0.0;
                     currentLongitude = longitude != null ? longitude : 0.0;
+                    currentPrice = price != null ? price : 0.0;
+
 
                     if (profileName != null) {
                         profileName.setText(currentUsername);
@@ -315,12 +344,12 @@ public class ProfileFragment extends Fragment {
                     if (profileLocation != null) {
                         profileLocation.setText(currentLocationName);
                     }
-                    if (availabilityText != null) {
-                        if (currentAvailability != null && !currentAvailability.isEmpty()) {
-                            availabilityText.setText("Availability: " + currentAvailability.toString());
-                            availabilityText.setVisibility(View.VISIBLE);
+                    if (profilePrice != null) {
+                        if (currentPrice > 0 && isServiceProvider(userType)) {
+                            profilePrice.setText(String.format("Price per Hour: %.2f AMD", currentPrice));
+                            profilePrice.setVisibility(View.VISIBLE);
                         } else {
-                            availabilityText.setVisibility(View.GONE);
+                            profilePrice.setVisibility(View.GONE);
                         }
                     }
                     if (profileImage != null) {
@@ -336,9 +365,7 @@ public class ProfileFragment extends Fragment {
                         }
                     }
                     if (myOrdersSection != null && userType != null &&
-                            (userType.equalsIgnoreCase("Dog Walker") ||
-                                    userType.equalsIgnoreCase("Trainer") ||
-                                    userType.equalsIgnoreCase("Veterinarian"))) {
+                            isServiceProvider(userType)) {
                         myOrdersSection.setVisibility(View.VISIBLE);
                     } else {
                         myOrdersSection.setVisibility(View.GONE);
@@ -348,6 +375,7 @@ public class ProfileFragment extends Fragment {
                 }
             }
 
+
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(getContext(), "Database error", Toast.LENGTH_SHORT).show();
@@ -355,12 +383,23 @@ public class ProfileFragment extends Fragment {
         });
     }
 
+
+    private boolean isServiceProvider(String userType) {
+        return userType != null && (
+                userType.equalsIgnoreCase("Dog Walker") ||
+                        userType.equalsIgnoreCase("Trainer") ||
+                        userType.equalsIgnoreCase("Veterinarian")
+        );
+    }
+
+
     private String bitmapToBase64(Bitmap bitmap) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 80, byteArrayOutputStream);
         byte[] byteArray = byteArrayOutputStream.toByteArray();
         return Base64.encodeToString(byteArray, Base64.DEFAULT);
     }
+
 
     private Bitmap base64ToBitmap(String base64Str) {
         try {
@@ -371,7 +410,9 @@ public class ProfileFragment extends Fragment {
         }
     }
 
-    private void saveUserProfile(String username, String bio, String locationName, double latitude, double longitude, Map<String, List<String>> availability) {
+
+    private void saveUserProfile(String username, String bio, String locationName, double latitude, double longitude,
+                                 Map<String, List<String>> availability, double price) {
         Map<String, Object> userData = new HashMap<>();
         userData.put("name", username);
         userData.put("bio", bio);
@@ -380,10 +421,12 @@ public class ProfileFragment extends Fragment {
         userData.put("longitude", longitude);
         userData.put("availability", availability);
         userData.put("userType", userType);
+        userData.put("pricePerHour", price);
         databaseRef.updateChildren(userData)
                 .addOnSuccessListener(aVoid -> {})
                 .addOnFailureListener(e -> {});
     }
+
 
     @Override
     public void onDestroyView() {

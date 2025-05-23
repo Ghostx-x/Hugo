@@ -50,7 +50,7 @@ public class ViewProfileFragment extends Fragment {
     private static final String ARG_USER_ID = "user_id";
     private static final String TAG = "ViewProfileFragment";
     private ImageView profileImage, dogImage;
-    private TextView profileName, profileBio, profileUserType, profileRanking, profileAvailability;
+    private TextView profileName, profileBio, profileUserType, profileRanking, profilePrice;
     private TextView dogName, dogBreed, dogAge;
     private CardView dogInfoCard;
     private RecyclerView reviewsRecyclerView;
@@ -83,7 +83,7 @@ public class ViewProfileFragment extends Fragment {
             profileBio = view.findViewById(R.id.profile_bio);
             profileUserType = view.findViewById(R.id.profile_user_type);
             profileRanking = view.findViewById(R.id.profile_ranking);
-            profileAvailability = view.findViewById(R.id.profile_availability);
+            profilePrice = view.findViewById(R.id.profile_price);
             dogInfoCard = view.findViewById(R.id.dog_info_card);
             dogImage = view.findViewById(R.id.dog_image);
             dogName = view.findViewById(R.id.dog_name);
@@ -92,13 +92,6 @@ public class ViewProfileFragment extends Fragment {
             reviewsRecyclerView = view.findViewById(R.id.reviews_recycler_view);
             chatButton = view.findViewById(R.id.chat_button);
             bookButton = view.findViewById(R.id.book_button);
-
-            if (profileAvailability == null) {
-                Log.e(TAG, "profileAvailability TextView is null. Check R.id.profile_availability in fragment_view_profile.xml");
-                Toast.makeText(getContext(), "UI error: Availability not found", Toast.LENGTH_SHORT).show();
-                getParentFragmentManager().popBackStack();
-                return;
-            }
 
             bottomNavigationView = getActivity().findViewById(R.id.bottom_navigation);
             if (bottomNavigationView != null) {
@@ -179,13 +172,20 @@ public class ViewProfileFragment extends Fragment {
                     return;
                 }
 
-                // Load user profile data
                 profileName.setText(user.name != null ? user.name : "No Name");
                 profileBio.setText(user.bio != null ? user.bio : "No bio");
                 profileUserType.setText(user.userType != null ? user.userType : "Unknown");
                 profileRanking.setText(user.ranking != null && user.ranking > 0 ? String.format("Rating: %.1f/5", user.ranking) : "Rating: N/A");
 
-                // Handle profile image (prefer Base64, fallback to URL if available)
+                if (profilePrice != null) {
+                    if (isServiceProvider(user.userType) && user.pricePerHour > 0) {
+                        profilePrice.setText(String.format("Price per Hour: %.2f AMD", user.pricePerHour));
+                        profilePrice.setVisibility(View.VISIBLE);
+                    } else {
+                        profilePrice.setVisibility(View.GONE);
+                    }
+                }
+
                 if (user.profileImageBase64 != null && !user.profileImageBase64.isEmpty()) {
                     loadImageFromBase64(profileImage, user.profileImageBase64, "Profile");
                 } else if (user.profileImageUrl != null && !user.profileImageUrl.isEmpty()) {
@@ -195,26 +195,6 @@ public class ViewProfileFragment extends Fragment {
                     Log.w(TAG, "No profile image found for user: " + user.name);
                 }
 
-                // Handle availability
-                if (profileAvailability != null) {
-                    if (isServiceProvider(user.userType) && user.availability != null && !user.availability.isEmpty()) {
-                        StringBuilder availabilityString = new StringBuilder();
-                        for (Map.Entry<String, List<String>> entry : user.availability.entrySet()) {
-                            String day = entry.getKey();
-                            List<String> slots = entry.getValue();
-                            if (slots != null && !slots.isEmpty()) {
-                                availabilityString.append(day).append(": ").append(String.join(", ", slots)).append("\n");
-                            }
-                        }
-                        profileAvailability.setText(availabilityString.length() > 0 ? availabilityString.toString() : "Availability: Not set");
-                        profileAvailability.setVisibility(View.VISIBLE);
-                    } else {
-                        profileAvailability.setVisibility(View.GONE);
-                        Log.w(TAG, "Availability not displayed: Not a service provider or no slots");
-                    }
-                }
-
-                // Load dog data (first valid dog)
                 DataSnapshot dogsSnapshot = snapshot.child("dogs");
                 Log.d(TAG, "Dog data snapshot: " + dogsSnapshot.toString());
                 Log.d(TAG, "Does dogs node exist? " + dogsSnapshot.exists());
@@ -223,7 +203,6 @@ public class ViewProfileFragment extends Fragment {
                 for (DataSnapshot dogSnapshot : dogsSnapshot.getChildren()) {
                     Log.d(TAG, "Dog snapshot: " + dogSnapshot.toString());
                     try {
-                        // Manually map fields to handle potential mismatches
                         dog = new User.Dog();
                         dog.name = dogSnapshot.child("name").getValue(String.class);
                         dog.breed = dogSnapshot.child("breed").getValue(String.class);
@@ -232,14 +211,13 @@ public class ViewProfileFragment extends Fragment {
                         dog.imageBase64 = dogSnapshot.child("imageBase64").getValue(String.class);
                         dog.birthday = dogSnapshot.child("birthday").getValue(String.class);
                         if (dog.birthday == null) {
-                            dog.birthday = dogSnapshot.child("birthDate").getValue(String.class); // Fallback to birthDate
+                            dog.birthday = dogSnapshot.child("birthDate").getValue(String.class);
                         }
                         dog.gender = dogSnapshot.child("gender").getValue(String.class);
                         dog.specialCare = dogSnapshot.child("specialCare").getValue(String.class);
 
                         Log.d(TAG, "Parsed dog: name=" + dog.name + ", breed=" + dog.breed + ", age=" + dog.age + ", birthday=" + dog.birthday);
 
-                        // Convert age to int and calculate if needed
                         int parsedAge = -1;
                         if (dog.age != null) {
                             try {
@@ -259,16 +237,15 @@ public class ViewProfileFragment extends Fragment {
                             }
                         }
 
-                        // Only proceed if dog has a name and valid data
                         if (dog.name != null && !dog.name.isEmpty()) {
-                            dog.age = String.valueOf(parsedAge); // Store back as String for consistency
-                            break; // Found a valid dog, stop processing
+                            dog.age = String.valueOf(parsedAge);
+                            break;
                         } else {
-                            dog = null; // Invalid dog, continue to next
+                            dog = null;
                         }
                     } catch (Exception e) {
                         Log.e(TAG, "Failed to parse dog data: " + e.getMessage(), e);
-                        dog = null; // Continue to next dog on failure
+                        dog = null;
                     }
                 }
 
@@ -285,7 +262,6 @@ public class ViewProfileFragment extends Fragment {
                     dogAge.setText(displayAge >= 0 ? displayAge + " years" : "Unknown Age");
                     Log.d(TAG, "Setting dog info: Name=" + dog.name + ", Breed=" + dog.breed + ", Age=" + dogAge.getText());
 
-                    // Handle dog image (prefer Base64, fallback to URL)
                     if (dog.imageBase64 != null && !dog.imageBase64.isEmpty()) {
                         loadImageFromBase64(dogImage, dog.imageBase64, "Dog");
                     } else if (dog.profileImageUrl != null && !dog.profileImageUrl.isEmpty()) {
