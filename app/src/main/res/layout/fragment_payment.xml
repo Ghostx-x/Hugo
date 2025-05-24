@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@color/milky">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Payment Details"
+        android:textSize="24sp"
+        android:textColor="@color/black"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Payment Method: Cash Only"
+        android:textSize="18sp"
+        android:textColor="@color/black"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:id="@+id/payment_amount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Amount: USD 20"
+        android:textSize="18sp"
+        android:textColor="@color/black"
+        android:layout_marginBottom="16dp" />
+
+    <Button
+        android:id="@+id/confirm_payment_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Confirm Payment"
+        android:backgroundTint="@color/darkblue"
+        android:textColor="@color/milky"
+        android:layout_marginBottom="16dp" />
+
+</LinearLayout>

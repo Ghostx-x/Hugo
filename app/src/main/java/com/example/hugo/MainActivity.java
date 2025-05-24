@@ -5,10 +5,12 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import com.google.android.material.badge.ExperimentalBadgeUtils;
 
 import com.example.hugo.bottomnavbar.Home.ConversationFragment;
 import com.example.hugo.bottomnavbar.Home.HomeFragment;
@@ -22,6 +24,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import androidx.annotation.OptIn;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
@@ -43,6 +46,13 @@ public class MainActivity extends AppCompatActivity {
         searchFragment = new SearchFragment();
         locationFragment = new LocationFragment();
         profileFragment = new ProfileFragment();
+
+        if (bottomNavigationView == null || loadingIndicator == null) {
+            Log.e(TAG, "Critical views not found in layout");
+            Toast.makeText(this, "UI initialization failed", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
 
         if (savedInstanceState == null) {
             Log.d(TAG, "Initial load: HomeFragment");

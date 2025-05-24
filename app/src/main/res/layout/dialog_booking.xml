@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@color/milky">
+
+    <TextView
+        android:id="@+id/selected_date"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Select a Date"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginBottom="16dp" />
+
+    <CalendarView
+        android:id="@+id/calendar_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Available Time Slots"
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        android:layout_marginBottom="8dp" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/time_slots_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_marginBottom="16dp" />
+
+    <Button
+        android:id="@+id/book_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Book Appointment"
+        android:backgroundTint="@color/darkblue"
+        android:textColor="@color/milky" />
+
+</LinearLayout>

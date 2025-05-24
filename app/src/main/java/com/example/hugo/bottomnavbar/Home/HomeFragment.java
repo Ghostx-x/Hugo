@@ -43,7 +43,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 
-@ExperimentalBadgeUtils // Apply annotation at class level
+@ExperimentalBadgeUtils
 public class HomeFragment extends Fragment {
 
     private static final String TAG = "HomeFragment";
@@ -51,70 +51,93 @@ public class HomeFragment extends Fragment {
     private FirebaseAuth mAuth;
     private DatabaseReference databaseRef;
     private BottomNavigationView bottomNavigationView;
-    private ShapeableImageView smallProfileIcon, chatButton;
-    private BadgeDrawable chatBadge; // Store badge instance to manage it
+    private ShapeableImageView profileButton, chatButton, alertsButton;
+    private BadgeDrawable chatBadge;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
+        // Initialize bottom navigation
         bottomNavigationView = getActivity().findViewById(R.id.bottom_navigation);
-        bottomNavigationView.setVisibility(View.VISIBLE);
+        if (bottomNavigationView != null) {
+            bottomNavigationView.setVisibility(View.VISIBLE);
+        } else {
+            Log.e(TAG, "Bottom navigation view not found");
+        }
 
-        ShapeableImageView profileButton = view.findViewById(R.id.profileButton);
-        profileButton.setShapeAppearanceModel(
-                profileButton.getShapeAppearanceModel()
-                        .toBuilder()
-                        .setAllCorners(com.google.android.material.shape.CornerFamily.ROUNDED, 50f)
-                        .build());
-        profileButton.setOnClickListener(v -> navigateToProfileFragment());
-
+        // Initialize views
+        profileButton = view.findViewById(R.id.profileButton);
         chatButton = view.findViewById(R.id.chatButton);
-        chatButton.setOnClickListener(v -> navigateToChatFragment());
-        updateChatBadge(); // Call here after chatButton is initialized
+        alertsButton = view.findViewById(R.id.alertsButton);
+        welcomeText = view.findViewById(R.id.welcomeText);
 
-        CardView cardView1 = view.findViewById(R.id.card_best_foods);
-        CardView cardView2 = view.findViewById(R.id.card_behavior_training);
-        CardView cardView3 = view.findViewById(R.id.card_health_aid);
+        if (profileButton != null) {
+            profileButton.setShapeAppearanceModel(
+                    profileButton.getShapeAppearanceModel()
+                            .toBuilder()
+                            .setAllCorners(com.google.android.material.shape.CornerFamily.ROUNDED, 50f)
+                            .build());
+            profileButton.setOnClickListener(v -> navigateToProfileFragment());
+        } else {
+            Log.e(TAG, "Profile button not found");
+        }
 
+        if (chatButton != null) {
+            chatButton.setOnClickListener(v -> navigateToChatFragment());
+            updateChatBadge();
+        } else {
+            Log.e(TAG, "Chat button not found");
+        }
+
+        if (alertsButton != null) {
+            alertsButton.setOnClickListener(v -> navigateToAlertsFragment());
+        } else {
+            Log.e(TAG, "Alerts button not found");
+        }
+
+        CardView cardBestFoods = view.findViewById(R.id.card_best_foods);
+        CardView cardBehaviorTraining = view.findViewById(R.id.card_behavior_training);
+        CardView cardHealthAid = view.findViewById(R.id.card_health_aid);
+
+        if (cardBestFoods != null) {
+            cardBestFoods.setOnClickListener(v -> openStoryFragment(new ArrayList<>(Arrays.asList(
+                    R.drawable.story1, R.drawable.story2, R.drawable.story3, R.drawable.story4, R.drawable.story5))));
+        } else {
+            Log.e(TAG, "Best foods card not found");
+        }
+
+        if (cardBehaviorTraining != null) {
+            cardBehaviorTraining.setOnClickListener(v -> openStoryFragment(new ArrayList<>(Arrays.asList(
+                    R.drawable.train1, R.drawable.train2, R.drawable.train3, R.drawable.train4))));
+        } else {
+            Log.e(TAG, "Behavior training card not found");
+        }
+
+        if (cardHealthAid != null) {
+            cardHealthAid.setOnClickListener(v -> openStoryFragment(new ArrayList<>(Arrays.asList(
+                    R.drawable.health1, R.drawable.health2, R.drawable.health3, R.drawable.health4))));
+        } else {
+            Log.e(TAG, "Health aid card not found");
+        }
+
+        // Initialize Firebase
         mAuth = FirebaseAuth.getInstance();
         databaseRef = FirebaseDatabase.getInstance().getReference("Users");
-
-        cardView1.setOnClickListener(v -> {
-            ArrayList<Integer> trainingImages = new ArrayList<>(Arrays.asList(
-                    R.drawable.story1, R.drawable.story2,
-                    R.drawable.story3, R.drawable.story4, R.drawable.story5
-            ));
-            openStoryFragment(trainingImages);
-        });
-
-        cardView2.setOnClickListener(v -> {
-            ArrayList<Integer> trainingImages = new ArrayList<>(Arrays.asList(
-                    R.drawable.train1, R.drawable.train2,
-                    R.drawable.train3, R.drawable.train4
-            ));
-            openStoryFragment(trainingImages);
-        });
-
-        cardView3.setOnClickListener(v -> {
-            ArrayList<Integer> healthImages = new ArrayList<>(Arrays.asList(
-                    R.drawable.health1, R.drawable.health2,
-                    R.drawable.health3, R.drawable.health4
-            ));
-            openStoryFragment(healthImages);
-        });
-
-        welcomeText = view.findViewById(R.id.welcomeText);
-        smallProfileIcon = view.findViewById(R.id.profileButton);
 
         loadUserData();
 
         return view;
     }
 
-    @ExperimentalBadgeUtils // Optional: Can move to class level as done above
+    @ExperimentalBadgeUtils
     private void updateChatBadge() {
+        if (chatButton == null) {
+            Log.w(TAG, "Chat button is null, cannot update badge");
+            return;
+        }
+
         SharedPreferences prefs = requireContext().getSharedPreferences("ChatPrefs", Context.MODE_PRIVATE);
         boolean hasUnreadMessages = prefs.getBoolean("hasUnreadMessages", false);
 
@@ -127,7 +150,6 @@ public class HomeFragment extends Fragment {
                 }
             }
 
-            // Create or update badge
             if (chatBadge == null) {
                 chatBadge = BadgeDrawable.create(requireContext());
                 BadgeUtils.attachBadgeDrawable(chatBadge, chatButton, null);
@@ -139,11 +161,9 @@ public class HomeFragment extends Fragment {
             chatBadge.setVerticalOffset(10);
             chatBadge.setVisible(true);
         } else {
-            // Remove badge if it exists
             if (chatBadge != null) {
-                chatBadge.setVisible(false); // Hide the badge
-                // Note: BadgeUtils.detachBadgeFromAnchor(chatButton) is not directly supported; hiding is sufficient
-                chatBadge = null; // Reset for next use
+                chatBadge.setVisible(false);
+                chatBadge = null;
             }
         }
     }
@@ -163,8 +183,9 @@ public class HomeFragment extends Fragment {
                 .replace(R.id.fragment_container, new ProfileFragment())
                 .addToBackStack(null)
                 .commit();
-        BottomNavigationView bottomNavigationView = getActivity().findViewById(R.id.bottom_navigation);
-        bottomNavigationView.setSelectedItemId(R.id.nav_profile);
+        if (bottomNavigationView != null) {
+            bottomNavigationView.setSelectedItemId(R.id.nav_profile);
+        }
     }
 
     private void navigateToChatFragment() {
@@ -174,49 +195,71 @@ public class HomeFragment extends Fragment {
                 .commit();
     }
 
+    private void navigateToAlertsFragment() {
+        getParentFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, new AlertsFragment())
+                .addToBackStack(null)
+                .commit();
+    }
+
     private void loadUserData() {
         FirebaseUser user = mAuth.getCurrentUser();
-        if (user != null) {
-            String userId = user.getUid();
-            databaseRef.child(userId).addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    if (snapshot.exists()) {
-                        String userName = snapshot.child("name").getValue(String.class);
-                        String base64Image = snapshot.child("profileImageBase64").getValue(String.class);
+        if (user == null) {
+            Log.w(TAG, "No authenticated user");
+            return;
+        }
 
+        String userId = user.getUid();
+        databaseRef.child(userId).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    String userName = snapshot.child("name").getValue(String.class);
+                    String base64Image = snapshot.child("profileImageBase64").getValue(String.class);
+
+                    if (welcomeText != null) {
                         welcomeText.setText(userName != null ? "Welcome back, " + userName : "Welcome back, User");
+                    }
 
+                    if (profileButton != null) {
                         if (base64Image != null && !base64Image.isEmpty()) {
                             try {
                                 byte[] decodedBytes = Base64.decode(base64Image, Base64.DEFAULT);
                                 Bitmap bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
                                 Bitmap circularBitmap = getCircularBitmap(bitmap);
-                                smallProfileIcon.setImageBitmap(circularBitmap);
+                                profileButton.setImageBitmap(circularBitmap);
                                 Log.d(TAG, "Profile image loaded from Base64");
                             } catch (Exception e) {
                                 Log.e(TAG, "Failed to decode Base64 image: " + e.getMessage(), e);
-                                smallProfileIcon.setImageResource(R.drawable.ic_profile);
+                                profileButton.setImageResource(R.drawable.ic_profile);
                                 Toast.makeText(getContext(), "Failed to load profile icon", Toast.LENGTH_SHORT).show();
                             }
                         } else {
-                            smallProfileIcon.setImageResource(R.drawable.ic_profile);
+                            profileButton.setImageResource(R.drawable.ic_profile);
                             Log.w(TAG, "No Base64 profile image found");
                         }
-                    } else {
+                    }
+                } else {
+                    if (welcomeText != null) {
                         welcomeText.setText("Welcome back, User");
-                        smallProfileIcon.setImageResource(R.drawable.ic_profile);
+                    }
+                    if (profileButton != null) {
+                        profileButton.setImageResource(R.drawable.ic_profile);
                     }
                 }
+            }
 
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                if (welcomeText != null) {
                     welcomeText.setText("Welcome back, User");
-                    smallProfileIcon.setImageResource(R.drawable.ic_profile);
-                    Toast.makeText(getContext(), "Failed to load user data", Toast.LENGTH_SHORT).show();
                 }
-            });
-        }
+                if (profileButton != null) {
+                    profileButton.setImageResource(R.drawable.ic_profile);
+                }
+                Toast.makeText(getContext(), "Failed to load user data", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private Bitmap getCircularBitmap(Bitmap bitmap) {
