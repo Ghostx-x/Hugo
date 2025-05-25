@@ -1,11 +1,13 @@
 package com.example.hugo.bottomnavbar.Profile;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -23,7 +25,7 @@ public class PaymentFragment extends Fragment {
     private TextView paymentAmount;
     private Button confirmPaymentButton;
     private String appointmentId;
-    private Float price; // Changed from float to Float
+    private Float price;
 
     @Nullable
     @Override
@@ -34,47 +36,68 @@ public class PaymentFragment extends Fragment {
         confirmPaymentButton = view.findViewById(R.id.confirm_payment_button);
         appointmentId = getArguments() != null ? getArguments().getString("appointmentId") : null;
 
+        if (appointmentId == null) {
+            Toast.makeText(getContext(), "Invalid appointment ID", Toast.LENGTH_SHORT).show();
+            paymentAmount.setText("Amount: Error");
+            confirmPaymentButton.setEnabled(false);
+            return view;
+        }
+
         // Load price from Firebase
         DatabaseReference appointmentRef = FirebaseDatabase.getInstance().getReference("Appointments").child(appointmentId);
         appointmentRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onDataChange(DataSnapshot snapshot) {
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
                 String walkerId = snapshot.child("dogWalkerId").getValue(String.class);
-                if (walkerId != null) {
-                    DatabaseReference walkerRef = FirebaseDatabase.getInstance().getReference("Users").child(walkerId);
-                    walkerRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot walkerSnapshot) {
-                            price = walkerSnapshot.child("pricePerHour").getValue(Float.class);
-                            if (price != null) {
-                                paymentAmount.setText("Amount: USD " + price);
-                            } else {
-                                paymentAmount.setText("Amount: USD 0.0"); // Fallback value if price is null
-                            }
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError error) {
-                            // Handle error
-                            paymentAmount.setText("Amount: Error");
-                        }
-                    });
+                if (walkerId == null) {
+                    Log.w("PaymentFragment", "No dogWalkerId found for appointment: " + appointmentId);
+                    paymentAmount.setText("Amount: Not set");
+                    confirmPaymentButton.setEnabled(false);
+                    return;
                 }
+
+                DatabaseReference walkerRef = FirebaseDatabase.getInstance().getReference("Users").child(walkerId);
+                walkerRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot walkerSnapshot) {
+                        price = walkerSnapshot.child("pricePerHour").getValue(Float.class);
+                        if (price != null && price > 0) {
+                            paymentAmount.setText("Amount: " + price + " AMD");
+                            Log.d("PaymentFragment", "Price set to: " + price + " AMD for walker: " + walkerId);
+                            confirmPaymentButton.setEnabled(true);
+                        } else {
+                            paymentAmount.setText("Amount: Not set");
+                            confirmPaymentButton.setEnabled(false);
+                            Log.w("PaymentFragment", "Price not set or invalid for walker: " + walkerId);
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Log.e("PaymentFragment", "Failed to fetch walker data: " + error.getMessage());
+                        paymentAmount.setText("Amount: Error");
+                        confirmPaymentButton.setEnabled(false);
+                    }
+                });
             }
 
             @Override
-            public void onCancelled(DatabaseError error) {
-                // Handle error
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("PaymentFragment", "Failed to fetch appointment data: " + error.getMessage());
                 paymentAmount.setText("Amount: Error");
+                confirmPaymentButton.setEnabled(false);
             }
         });
 
         confirmPaymentButton.setOnClickListener(v -> {
+            if (price == null || price <= 0) {
+                Toast.makeText(getContext(), "Cannot confirm payment: Price not set", Toast.LENGTH_SHORT).show();
+                return;
+            }
             PaymentConfirmationFragment fragment = new PaymentConfirmationFragment();
             Bundle args = new Bundle();
             args.putString("appointmentId", appointmentId);
-            // Pass price as a float, default to 0.0f if price is null
-            args.putFloat("price", price != null ? price : 0.0f);
+            args.putFloat("price", price);
             fragment.setArguments(args);
             getParentFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, fragment)

@@ -20,10 +20,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.hugo.R;
+import com.example.hugo.bottomnavbar.Profile.PaymentFragment;
 import com.example.hugo.bottomnavbar.Search.ViewProfileFragment;
 
 import java.util.List;
@@ -32,10 +33,12 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
 
     private List<Booking> bookings;
     private Context context;
+    private FragmentManager fragmentManager;
 
-    public BookingAdapter(List<Booking> bookings, Context context) {
+    public BookingAdapter(List<Booking> bookings, Context context, FragmentManager fragmentManager) {
         this.bookings = bookings;
         this.context = context;
+        this.fragmentManager = fragmentManager;
     }
 
     @NonNull
@@ -77,11 +80,33 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
             Bundle args = new Bundle();
             args.putString("user_id", booking.bookedUserId);
             viewProfileFragment.setArguments(args);
-            FragmentActivity activity = (FragmentActivity) context;
-            activity.getSupportFragmentManager().beginTransaction()
+            fragmentManager.beginTransaction()
                     .replace(R.id.fragment_container, viewProfileFragment)
                     .addToBackStack("ViewProfileFragment")
                     .commit();
+        });
+
+        holder.payButton.setOnClickListener(v -> {
+            Log.d("BookingAdapter", "Pay button clicked for booking with user: " + booking.bookedUserName);
+            if (booking.bookedUserId == null || booking.bookedUserId.isEmpty()) {
+                Log.w("BookingAdapter", "Invalid bookedUserId for payment");
+                Toast.makeText(context, "Cannot process payment: Invalid appointment ID", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            PaymentFragment paymentFragment = new PaymentFragment();
+            Bundle args = new Bundle();
+            args.putString("appointmentId", booking.bookedUserId);
+            paymentFragment.setArguments(args);
+
+            try {
+                fragmentManager.beginTransaction()
+                        .replace(R.id.fragment_container, paymentFragment)
+                        .addToBackStack(null)
+                        .commit();
+            } catch (Exception e) {
+                Log.e("BookingAdapter", "Error navigating to PaymentFragment: " + e.getMessage());
+                Toast.makeText(context, "Navigation error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
@@ -107,10 +132,10 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
         return output;
     }
 
-    class BookingViewHolder extends RecyclerView.ViewHolder {
+    static class BookingViewHolder extends RecyclerView.ViewHolder {
         ImageView userImage;
         TextView userName, bookingTime, status;
-        Button viewDetailsButton;
+        Button viewDetailsButton, payButton;
 
         BookingViewHolder(View itemView) {
             super(itemView);
@@ -119,6 +144,7 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
             bookingTime = itemView.findViewById(R.id.booking_time);
             status = itemView.findViewById(R.id.booking_status);
             viewDetailsButton = itemView.findViewById(R.id.view_details_button);
+            payButton = itemView.findViewById(R.id.pay_button);
         }
     }
 }

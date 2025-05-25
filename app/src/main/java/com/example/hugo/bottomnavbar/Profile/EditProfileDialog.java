@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import com.example.hugo.R;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -33,6 +34,7 @@ public class EditProfileDialog extends Dialog {
 
     private static final String TAG = "EditProfileDialog";
     private TextInputEditText usernameInput, bioInput, priceInput;
+    private TextInputLayout priceInputLayout;
     private Button selectLocationButton, saveButton;
     private TextView selectedLocationText;
     private LinearLayout availabilityContainer;
@@ -55,52 +57,59 @@ public class EditProfileDialog extends Dialog {
         this.currentLocationName = currentLocationName;
         this.currentLatitude = currentLatitude;
         this.currentLongitude = currentLongitude;
-        this.userType = userType;
+        this.userType = userType != null ? userType : "Dog Owner";
         this.availability = availability != null ? new HashMap<>(availability) : new HashMap<>();
         this.currentPrice = currentPrice;
         this.updateListener = updateListener;
         this.selectLocationListener = selectLocationListener;
-        Log.d(TAG, "EditProfileDialog created: username=" + currentUsername + ", location=" + currentLocationName + ", userType=" + userType);
+        Log.d(TAG, "EditProfileDialog created: username=" + currentUsername + ", location=" + currentLocationName + ", userType=" + userType + ", isServiceProvider=" + isServiceProvider(userType));
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(TAG, "onCreate called");
         View view = LayoutInflater.from(getContext()).inflate(R.layout.dialog_edit_profile, null);
         setContentView(view);
 
         usernameInput = view.findViewById(R.id.username_input);
         bioInput = view.findViewById(R.id.bio_input);
+        priceInputLayout = view.findViewById(R.id.price_input_layout);
         priceInput = view.findViewById(R.id.price_input);
         selectLocationButton = view.findViewById(R.id.select_location_button);
         selectedLocationText = view.findViewById(R.id.selected_location_text);
         saveButton = view.findViewById(R.id.save_button);
         availabilityContainer = view.findViewById(R.id.availability_container);
 
-        if (priceInput == null) {
-            Log.e(TAG, "price_input is null - check dialog_edit_profile.xml");
+        if (priceInputLayout == null || priceInput == null) {
+            Log.e(TAG, "price_input_layout or price_input is null - check dialog_edit_profile.xml");
         } else {
-            Log.d(TAG, "price_input initialized successfully");
+            Log.d(TAG, "price_input_layout and price_input initialized successfully");
         }
 
         usernameInput.setText(currentUsername);
         bioInput.setText(currentBio);
-        priceInput.setText(currentPrice > 0 ? String.valueOf(currentPrice) : "");
         selectedLocationText.setText(currentLocationName.isEmpty() ? "No location selected" : currentLocationName);
-        Log.d(TAG, "Price input set to: " + priceInput.getText().toString());
 
-        // Force price input to be visible for testing
-        priceInput.setVisibility(View.VISIBLE);
-        Log.d(TAG, "Price input forced to VISIBLE, userType: " + userType + ", isServiceProvider: " + isServiceProvider(userType));
+        // Set price field visibility based on userType
+        if (isServiceProvider(userType)) {
+            priceInputLayout.setVisibility(View.VISIBLE);
+            priceInput.setEnabled(true);
+            priceInput.setText(currentPrice > 0 ? String.format(Locale.getDefault(), "%.2f", currentPrice) : "");
+            Log.d(TAG, "Price input visible for service provider: " + userType + ", price=" + currentPrice);
+        } else {
+            priceInputLayout.setVisibility(View.GONE);
+            priceInput.setEnabled(false);
+            Log.d(TAG, "Price input hidden for userType: " + userType);
+        }
 
+        // Set availability UI visibility based on userType
         if (isServiceProvider(userType)) {
             setupAvailabilityUI();
             availabilityContainer.setVisibility(View.VISIBLE);
-            Log.d(TAG, "Availability container set to VISIBLE");
+            Log.d(TAG, "Availability container visible for service provider: " + userType);
         } else {
             availabilityContainer.setVisibility(View.GONE);
-            Log.d(TAG, "Availability container set to GONE");
+            Log.d(TAG, "Availability container hidden for userType: " + userType);
         }
 
         selectLocationButton.setOnClickListener(v -> {
@@ -112,40 +121,47 @@ public class EditProfileDialog extends Dialog {
 
         saveButton.setOnClickListener(v -> {
             Log.d(TAG, "Save button clicked");
-            String newUsername = usernameInput.getText().toString().trim();
-            String newBio = bioInput.getText().toString().trim();
-            String priceString = priceInput.getText().toString().trim();
-            double newPrice = 0.0;
-            if (!priceString.isEmpty()) {
-                try {
-                    newPrice = Double.parseDouble(priceString);
-                    if (newPrice < 0) {
-                        Toast.makeText(getContext(), "Price cannot be negative", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                } catch (NumberFormatException e) {
-                    Toast.makeText(getContext(), "Invalid price format", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-            }
+            final String newUsername = usernameInput.getText().toString().trim();
+            final String newBio = bioInput.getText().toString().trim();
+            final double newPrice;
 
             if (newUsername.isEmpty()) {
-                Log.w(TAG, "Username is empty");
                 Toast.makeText(getContext(), "Username cannot be empty", Toast.LENGTH_SHORT).show();
+                Log.w(TAG, "Username is empty");
                 return;
             }
 
-            Map<String, List<String>> newAvailability = isServiceProvider(userType) ? availability : new HashMap<>();
+            if (isServiceProvider(userType) && priceInputLayout.getVisibility() == View.VISIBLE) {
+                String priceString = priceInput.getText().toString().trim();
+                if (!priceString.isEmpty()) {
+                    try {
+                        double parsedPrice = Double.parseDouble(priceString);
+                        if (parsedPrice < 0) {
+                            Toast.makeText(getContext(), "Price cannot be negative", Toast.LENGTH_SHORT).show();
+                            Log.w(TAG, "Negative price entered: " + priceString);
+                            return;
+                        }
+                        newPrice = parsedPrice;
+                    } catch (NumberFormatException e) {
+                        Toast.makeText(getContext(), "Invalid price format", Toast.LENGTH_SHORT).show();
+                        Log.w(TAG, "Invalid price format: " + priceString, e);
+                        return;
+                    }
+                } else {
+                    newPrice = 0.0; // Default to 0 if empty
+                }
+            } else {
+                newPrice = 0.0; // Dog owners do not set a price
+            }
+
+            final Map<String, List<String>> newAvailability = isServiceProvider(userType) ? availability : new HashMap<>();
 
             FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
             if (user == null) {
-                Log.w(TAG, "No authenticated user found");
                 Toast.makeText(getContext(), "Please sign in", Toast.LENGTH_SHORT).show();
+                Log.w(TAG, "No authenticated user found");
                 return;
             }
-
-            final String finalUsername = newUsername;
-            final double finalPrice = newPrice;
 
             String userId = user.getUid();
             DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(userId);
@@ -156,13 +172,15 @@ public class EditProfileDialog extends Dialog {
             updates.put("latitude", currentLatitude);
             updates.put("longitude", currentLongitude);
             updates.put("availability", newAvailability);
-            updates.put("pricePerHour", newPrice);
+            if (isServiceProvider(userType)) {
+                updates.put("pricePerHour", newPrice);
+            }
 
             userRef.updateChildren(updates)
                     .addOnSuccessListener(aVoid -> {
-                        Log.d(TAG, "Profile updated successfully: username=" + finalUsername + ", price=" + finalPrice);
-                        updateListener.onProfileUpdated(finalUsername, newBio, currentLocationName,
-                                currentLatitude, currentLongitude, newAvailability, finalPrice);
+                        Log.d(TAG, "Profile updated: username=" + newUsername + ", price=" + newPrice + ", userType=" + userType);
+                        updateListener.onProfileUpdated(newUsername, newBio, currentLocationName,
+                                currentLatitude, currentLongitude, newAvailability, newPrice);
                         Toast.makeText(getContext(), "Profile saved", Toast.LENGTH_SHORT).show();
                         dismiss();
                     })
@@ -227,7 +245,6 @@ public class EditProfileDialog extends Dialog {
     public void updateLocation(double latitude, double longitude) {
         this.currentLatitude = latitude;
         this.currentLongitude = longitude;
-
         String placeName = getPlaceName(latitude, longitude);
         this.currentLocationName = placeName != null ? placeName : "Lat: " + latitude + ", Lng: " + longitude;
         selectedLocationText.setText(currentLocationName);
@@ -260,17 +277,5 @@ public class EditProfileDialog extends Dialog {
 
     public interface OnSelectLocationListener {
         void onSelectLocation();
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        Log.d(TAG, "onStart called");
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        Log.d(TAG, "onStop called");
     }
 }

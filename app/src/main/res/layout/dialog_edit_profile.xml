@@ -43,13 +43,14 @@
                 android:textSize="16sp" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Price per Hour Input -->
+        <!-- Price per Hour Input (visible only for service providers) -->
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/price_input_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Price per Hour (AMD)"
             android:layout_marginBottom="8dp"
-            android:visibility="visible">
+            android:visibility="gone">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/price_input"
@@ -82,7 +83,7 @@
             android:fontFamily="@font/quicksand_bold"
             android:layout_marginBottom="8dp" />
 
-        <!-- Availability Container -->
+        <!-- Availability Container (visible for service providers) -->
         <LinearLayout
             android:id="@+id/availability_container"
             android:layout_width="match_parent"

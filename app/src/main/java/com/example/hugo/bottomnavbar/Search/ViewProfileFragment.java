@@ -42,7 +42,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.concurrent.Executors;
 
 public class ViewProfileFragment extends Fragment {
@@ -58,6 +57,8 @@ public class ViewProfileFragment extends Fragment {
     private ReviewAdapter reviewAdapter;
     private DatabaseReference userRef;
     private BottomNavigationView bottomNavigationView;
+    private ValueEventListener userDataListener;
+    private ValueEventListener reviewsListener;
 
     public static ViewProfileFragment newInstance(String userId) {
         ViewProfileFragment fragment = new ViewProfileFragment();
@@ -119,7 +120,7 @@ public class ViewProfileFragment extends Fragment {
         }
 
         userRef = FirebaseDatabase.getInstance().getReference("Users").child(userId);
-        loadUserData();
+        setupListeners();
 
         chatButton.setOnClickListener(v -> {
             String chatUserId = userId;
@@ -159,8 +160,8 @@ public class ViewProfileFragment extends Fragment {
         });
     }
 
-    private void loadUserData() {
-        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+    private void setupListeners() {
+        userDataListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 Log.d(TAG, "User data snapshot: " + snapshot.toString());
@@ -280,8 +281,6 @@ public class ViewProfileFragment extends Fragment {
                 } else {
                     bookButton.setVisibility(View.VISIBLE);
                 }
-
-                loadReviews();
             }
 
             @Override
@@ -290,7 +289,42 @@ public class ViewProfileFragment extends Fragment {
                 Toast.makeText(getContext(), "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
                 getParentFragmentManager().popBackStack();
             }
-        });
+        };
+
+        reviewsListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<Review> reviews = new ArrayList<>();
+                for (DataSnapshot reviewSnap : snapshot.getChildren()) {
+                    Review review = reviewSnap.getValue(Review.class);
+                    if (review != null) {
+                        reviews.add(review);
+                        Log.d(TAG, "Loaded review: " + review.comment + ", Rating: " + review.rating);
+                    }
+                }
+                reviewAdapter.updateReviews(reviews);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e(TAG, "Failed to load reviews: " + error.getMessage());
+            }
+        };
+
+        userRef.addValueEventListener(userDataListener);
+        userRef.child("reviews").addValueEventListener(reviewsListener);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        // Remove listeners to prevent memory leaks
+        if (userRef != null && userDataListener != null) {
+            userRef.removeEventListener(userDataListener);
+        }
+        if (userRef != null && reviewsListener != null) {
+            userRef.child("reviews").removeEventListener(reviewsListener);
+        }
     }
 
     private void loadImageFromBase64(ImageView imageView, String base64, String imageType) {
@@ -369,27 +403,6 @@ public class ViewProfileFragment extends Fragment {
                         userType.equalsIgnoreCase("Trainer") ||
                         userType.equalsIgnoreCase("Veterinarian")
         );
-    }
-
-    private void loadReviews() {
-        userRef.child("reviews").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                List<Review> reviews = new ArrayList<>();
-                for (DataSnapshot reviewSnap : snapshot.getChildren()) {
-                    Review review = reviewSnap.getValue(Review.class);
-                    if (review != null) {
-                        reviews.add(review);
-                    }
-                }
-                reviewAdapter.updateReviews(reviews);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e(TAG, "Failed to load reviews: " + error.getMessage());
-            }
-        });
     }
 
     private Bitmap getCircularBitmap(Bitmap bitmap) {

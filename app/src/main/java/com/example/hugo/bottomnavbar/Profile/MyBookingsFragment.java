@@ -40,7 +40,7 @@ public class MyBookingsFragment extends Fragment {
         bookingsRecyclerView = view.findViewById(R.id.bookings_recycler_view);
         bookingsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         bookingList = new ArrayList<>();
-        adapter = new BookingAdapter(bookingList, getContext());
+        adapter = new BookingAdapter(bookingList, getContext(), getParentFragmentManager());
         bookingsRecyclerView.setAdapter(adapter);
 
         ImageView backArrow = view.findViewById(R.id.back_arrow);
