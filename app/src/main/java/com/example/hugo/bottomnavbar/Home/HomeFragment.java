@@ -52,7 +52,7 @@ public class HomeFragment extends Fragment {
     private DatabaseReference databaseRef;
     private BottomNavigationView bottomNavigationView;
     private ShapeableImageView profileButton, chatButton, alertsButton;
-    private BadgeDrawable chatBadge;
+    private BadgeDrawable chatBadge, alertsBadge;
 
     @Nullable
     @Override
@@ -92,7 +92,17 @@ public class HomeFragment extends Fragment {
         }
 
         if (alertsButton != null) {
-            alertsButton.setOnClickListener(v -> navigateToAlertsFragment());
+            alertsButton.setOnClickListener(v -> {
+                navigateToAlertsFragment();
+                // Clear badge when navigating to AlertsFragment
+                if (alertsBadge != null) {
+                    alertsBadge.setVisible(false);
+                    alertsBadge = null;
+                }
+                // Mark notifications as read
+                markNotificationsAsRead();
+            });
+            updateAlertsBadge();
         } else {
             Log.e(TAG, "Alerts button not found");
         }
@@ -165,6 +175,59 @@ public class HomeFragment extends Fragment {
                 chatBadge.setVisible(false);
                 chatBadge = null;
             }
+        }
+    }
+
+    @ExperimentalBadgeUtils
+    private void updateAlertsBadge() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null || alertsButton == null) {
+            Log.w(TAG, "User or alertsButton is null, cannot update badge");
+            return;
+        }
+
+        DatabaseReference alertsRef = FirebaseDatabase.getInstance().getReference("Users").child(user.getUid()).child("Alerts");
+        alertsRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                long unreadCount = snapshot.getChildrenCount();
+                if (unreadCount > 0) {
+                    if (alertsBadge == null) {
+                        alertsBadge = BadgeDrawable.create(requireContext());
+                        BadgeUtils.attachBadgeDrawable(alertsBadge, alertsButton, null);
+                    }
+                    alertsBadge.setNumber((int) unreadCount);
+                    alertsBadge.setBackgroundColor(Color.RED);
+                    alertsBadge.setBadgeGravity(BadgeDrawable.TOP_END);
+                    alertsBadge.setHorizontalOffset(10);
+                    alertsBadge.setVerticalOffset(10);
+                    alertsBadge.setVisible(true);
+                    alertsButton.setImageResource(R.drawable.alert_active); // Change to active icon
+                } else {
+                    if (alertsBadge != null) {
+                        alertsBadge.setVisible(false);
+                        alertsBadge = null;
+                    }
+                    alertsButton.setImageResource(R.drawable.alert); // Revert to normal icon
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e(TAG, "Failed to load alerts: " + error.getMessage());
+            }
+        });
+    }
+
+    private void markNotificationsAsRead() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            DatabaseReference alertsRef = FirebaseDatabase.getInstance().getReference("Users").child(user.getUid()).child("Alerts");
+            alertsRef.removeValue().addOnSuccessListener(aVoid -> {
+                Log.d(TAG, "Notifications marked as read");
+            }).addOnFailureListener(e -> {
+                Log.e(TAG, "Failed to mark notifications as read: " + e.getMessage());
+            });
         }
     }
 
@@ -282,6 +345,7 @@ public class HomeFragment extends Fragment {
     public void onResume() {
         super.onResume();
         updateChatBadge();
+        updateAlertsBadge();
     }
 
     @Override

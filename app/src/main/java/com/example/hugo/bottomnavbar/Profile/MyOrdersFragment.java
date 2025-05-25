@@ -12,8 +12,12 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.work.Data;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
 import com.example.hugo.R;
+import com.example.hugo.bottomnavbar.ReminderWorker;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -22,8 +26,14 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class MyOrdersFragment extends Fragment implements OrderAdapter.OnStatusUpdateListener {
 
@@ -96,6 +106,20 @@ public class MyOrdersFragment extends Fragment implements OrderAdapter.OnStatusU
 
     @Override
     public void onStatusUpdate(String notificationId, String bookingId, String userId, String status) {
+        // Find the Notification object to get bookedTime
+        String bookedTime = null;
+        for (Notification notification : orderList) {
+            if (notification.getNotificationId().equals(notificationId)) {
+                bookedTime = notification.getBookedTime();
+                break;
+            }
+        }
+
+        if (bookedTime == null) {
+            Toast.makeText(getContext(), "Error: Booking time not found", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         DatabaseReference notificationRef = FirebaseDatabase.getInstance()
                 .getReference("Notifications")
                 .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
@@ -105,11 +129,16 @@ public class MyOrdersFragment extends Fragment implements OrderAdapter.OnStatusU
                 .child(userId)
                 .child(bookingId);
 
+        String finalBookedTime = bookedTime; // For use in lambda expressions
         notificationRef.child("status").setValue(status)
                 .addOnSuccessListener(aVoid -> {
                     bookingRef.child("status").setValue(status)
                             .addOnSuccessListener(aVoid2 -> {
                                 Toast.makeText(getContext(), "Booking " + status, Toast.LENGTH_SHORT).show();
+                                if (status.equals("Accepted")) {
+                                    sendAcceptanceNotification(bookingId, userId, finalBookedTime);
+                                    scheduleReminderNotification(bookingId, userId, FirebaseAuth.getInstance().getCurrentUser().getUid(), finalBookedTime);
+                                }
                             })
                             .addOnFailureListener(e -> {
                                 Toast.makeText(getContext(), "Failed to update booking status", Toast.LENGTH_SHORT).show();
@@ -118,6 +147,47 @@ public class MyOrdersFragment extends Fragment implements OrderAdapter.OnStatusU
                 .addOnFailureListener(e -> {
                     Toast.makeText(getContext(), "Failed to update notification status", Toast.LENGTH_SHORT).show();
                 });
+    }
+
+    private void sendAcceptanceNotification(String bookingId, String ownerId, String bookedTime) {
+        DatabaseReference userAlertsRef = FirebaseDatabase.getInstance().getReference("Users").child(ownerId).child("Alerts").push();
+        Map<String, Object> notification = new HashMap<>();
+        notification.put("message", "Your booking for " + bookedTime + " has been accepted!");
+        notification.put("timestamp", System.currentTimeMillis());
+        userAlertsRef.setValue(notification).addOnSuccessListener(aVoid -> {
+            // Notification sent successfully
+        }).addOnFailureListener(e -> {
+            Toast.makeText(getContext(), "Failed to send acceptance notification", Toast.LENGTH_SHORT).show();
+        });
+    }
+
+    private void scheduleReminderNotification(String bookingId, String ownerId, String walkerId, String bookedTime) {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US);
+            Date bookedDate = sdf.parse(bookedTime);
+            if (bookedDate != null) {
+                long reminderTime = bookedDate.getTime() - 15 * 60 * 1000; // 15 minutes before
+                long delay = reminderTime - System.currentTimeMillis();
+                if (delay > 0) {
+                    Data inputData = new Data.Builder()
+                            .putString("appointmentId", bookingId)
+                            .putString("ownerId", ownerId)
+                            .putString("walkerId", walkerId)
+                            .putString("date", bookedTime.split(" ")[0])
+                            .putString("time", bookedTime.split(" ")[1])
+                            .build();
+
+                    OneTimeWorkRequest reminderRequest = new OneTimeWorkRequest.Builder(ReminderWorker.class)
+                            .setInitialDelay(delay, TimeUnit.MILLISECONDS)
+                            .setInputData(inputData)
+                            .build();
+
+                    WorkManager.getInstance(requireContext()).enqueue(reminderRequest);
+                }
+            }
+        } catch (Exception e) {
+            Toast.makeText(getContext(), "Failed to schedule reminder", Toast.LENGTH_SHORT).show();
+        }
     }
 }
 

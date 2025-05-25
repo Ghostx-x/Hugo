@@ -1,7 +1,5 @@
 package com.example.hugo.bottomnavbar.Profile;
 
-import static android.content.ContentValues.TAG;
-
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -19,31 +17,24 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.hugo.R;
-import com.example.hugo.bottomnavbar.Search.Dog;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 
 public class DogAdapter extends RecyclerView.Adapter<DogAdapter.DogViewHolder> {
 
+    private static final String TAG = "DogAdapter";
     private final List<Dog> dogList;
     private Context context;
     private OnDogDeleteListener deleteListener;
-    private Map<String, String> dogKeys; // Reference to DogFragment's key map
 
     public interface OnDogDeleteListener {
         void onDogDelete(Dog dog, int position);
     }
 
-    public DogAdapter(List<Dog> dogList, Context context, OnDogDeleteListener deleteListener, Map<String, String> dogKeys) {
+    public DogAdapter(List<Dog> dogList, Context context, OnDogDeleteListener deleteListener) {
         this.dogList = dogList;
         this.context = context;
         this.deleteListener = deleteListener;
-        this.dogKeys = dogKeys;
     }
 
     @NonNull
@@ -75,6 +66,7 @@ public class DogAdapter extends RecyclerView.Adapter<DogAdapter.DogViewHolder> {
                     holder.dogImage.setVisibility(View.GONE);
                 }
             } catch (Exception e) {
+                Log.e(TAG, "Failed to decode image: " + e.getMessage(), e);
                 holder.dogImage.setVisibility(View.GONE);
             }
         } else {
@@ -85,7 +77,7 @@ public class DogAdapter extends RecyclerView.Adapter<DogAdapter.DogViewHolder> {
         holder.editIcon.setOnClickListener(v -> {
             if (context instanceof FragmentActivity) {
                 FragmentActivity activity = (FragmentActivity) context;
-                String key = dogKeys.get(dog.getName());
+                String key = dog.getKey();
                 if (key != null) {
                     EditDogFragment editDogFragment = EditDogFragment.newInstance(dog, key);
                     activity.getSupportFragmentManager()
