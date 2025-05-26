@@ -1,6 +1,7 @@
 package com.example.hugo.bottomnavbar.Profile;
 
 public class Booking {
+    public String appointmentId;
     public String bookedUserId;
     public String bookedUserName;
     public String bookedUserPhotoBase64;
@@ -8,10 +9,11 @@ public class Booking {
     public String status;
 
     public Booking() {
-
     }
 
-    public Booking(String bookedUserId, String bookedUserName, String bookedUserPhotoBase64, String bookedTime, String status) {
+    public Booking(String appointmentId, String bookedUserId, String bookedUserName, String bookedUserPhotoBase64,
+                   String bookedTime, String status) {
+        this.appointmentId = appointmentId;
         this.bookedUserId = bookedUserId;
         this.bookedUserName = bookedUserName;
         this.bookedUserPhotoBase64 = bookedUserPhotoBase64;
@@ -19,6 +21,13 @@ public class Booking {
         this.status = status;
     }
 
+    public String getAppointmentId() {
+        return appointmentId;
+    }
+
+    public void setAppointmentId(String appointmentId) {
+        this.appointmentId = appointmentId;
+    }
 
     public String getBookedUserId() {
         return bookedUserId;

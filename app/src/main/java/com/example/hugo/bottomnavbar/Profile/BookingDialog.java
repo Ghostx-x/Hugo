@@ -67,15 +67,11 @@ public class BookingDialog extends Dialog {
         timeSlotsRecyclerView = view.findViewById(R.id.time_slots_recycler_view);
         bookButton = view.findViewById(R.id.book_button);
 
-        // Initialize RecyclerView
         timeSlotsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         availableTimeSlots = new ArrayList<>();
-        timeSlotAdapter = new TimeSlotAdapter(availableTimeSlots, (timeSlot) -> {
-            selectedTimeSlot = timeSlot;
-        });
+        timeSlotAdapter = new TimeSlotAdapter(availableTimeSlots, (timeSlot) -> selectedTimeSlot = timeSlot);
         timeSlotsRecyclerView.setAdapter(timeSlotAdapter);
 
-        // Set up CalendarView
         Calendar calendar = Calendar.getInstance();
         calendarView.setMinDate(System.currentTimeMillis() - 1000);
         updateDateVariables(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
@@ -87,7 +83,6 @@ public class BookingDialog extends Dialog {
 
         bookButton.setOnClickListener(v -> bookAppointment());
 
-        // Load Dog Walker's availability
         loadDogWalkerAvailability();
     }
 
@@ -163,6 +158,7 @@ public class BookingDialog extends Dialog {
             return;
         }
 
+        Log.d(TAG, "Saving booking for user: " + user.getEmail() + ", walker: " + dogWalkerId);
         DatabaseReference bookingsRef = FirebaseDatabase.getInstance().getReference("Appointments");
         String bookingId = bookingsRef.push().getKey();
         Map<String, Object> appointment = new HashMap<>();
@@ -178,6 +174,7 @@ public class BookingDialog extends Dialog {
         if (bookingId != null) {
             bookingsRef.child(bookingId).setValue(appointment)
                     .addOnSuccessListener(aVoid -> {
+                        Log.d(TAG, "Booking saved successfully: " + bookingId);
                         sendNotification(user.getUid(), dogWalkerId, "Booking requested for " +
                                 selectedDateText.getText().toString() + " at " + selectedTimeSlot);
                         Toast.makeText(getContext(), "Booking request sent", Toast.LENGTH_SHORT).show();
@@ -185,8 +182,17 @@ public class BookingDialog extends Dialog {
                             bookingConfirmedListener.onBookingConfirmed(selectedDateText.getText().toString(), selectedTimeSlot);
                         }
                         dismiss();
+                        // Refresh MyBookingsFragment
+                        if (getContext() instanceof androidx.fragment.app.FragmentActivity) {
+                            androidx.fragment.app.FragmentActivity activity = (androidx.fragment.app.FragmentActivity) getContext();
+                            androidx.fragment.app.Fragment fragment = activity.getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+                            if (fragment instanceof MyBookingsFragment) {
+                                ((MyBookingsFragment) fragment).loadBookings();
+                            }
+                        }
                     })
                     .addOnFailureListener(e -> {
+                        Log.e(TAG, "Failed to save booking: " + e.getMessage());
                         Toast.makeText(getContext(), "Failed to send booking request", Toast.LENGTH_SHORT).show();
                     });
         }

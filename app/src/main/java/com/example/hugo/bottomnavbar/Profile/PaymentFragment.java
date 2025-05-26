@@ -37,38 +37,54 @@ public class PaymentFragment extends Fragment {
         appointmentId = getArguments() != null ? getArguments().getString("appointmentId") : null;
 
         if (appointmentId == null) {
+            Log.w("PaymentFragment", "Invalid appointmentId: null");
             Toast.makeText(getContext(), "Invalid appointment ID", Toast.LENGTH_SHORT).show();
             paymentAmount.setText("Amount: Error");
             confirmPaymentButton.setEnabled(false);
             return view;
         }
 
-        // Load price from Firebase
+        Log.d("PaymentFragment", "Fetching appointment data for appointmentId: " + appointmentId);
         DatabaseReference appointmentRef = FirebaseDatabase.getInstance().getReference("Appointments").child(appointmentId);
         appointmentRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (!snapshot.exists()) {
+                    Log.w("PaymentFragment", "Appointment not found for appointmentId: " + appointmentId);
+                    paymentAmount.setText("Amount: Not set");
+                    confirmPaymentButton.setEnabled(false);
+                    Toast.makeText(getContext(), "Appointment not found", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 String walkerId = snapshot.child("dogWalkerId").getValue(String.class);
                 if (walkerId == null) {
                     Log.w("PaymentFragment", "No dogWalkerId found for appointment: " + appointmentId);
                     paymentAmount.setText("Amount: Not set");
                     confirmPaymentButton.setEnabled(false);
+                    Toast.makeText(getContext(), "Service provider not found", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
+                Log.d("PaymentFragment", "Fetching price for walkerId: " + walkerId);
                 DatabaseReference walkerRef = FirebaseDatabase.getInstance().getReference("Users").child(walkerId);
                 walkerRef.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot walkerSnapshot) {
-                        price = walkerSnapshot.child("pricePerHour").getValue(Float.class);
+                        Double priceDouble = walkerSnapshot.child("pricePerHour").getValue(Double.class);
+                        price = priceDouble != null ? priceDouble.floatValue() : null;
+                        if (price == null) {
+                            price = walkerSnapshot.child("pricePerHour").getValue(Float.class);
+                        }
                         if (price != null && price > 0) {
-                            paymentAmount.setText("Amount: " + price + " AMD");
+                            paymentAmount.setText(String.format("Amount: %.2f AMD", price));
                             Log.d("PaymentFragment", "Price set to: " + price + " AMD for walker: " + walkerId);
                             confirmPaymentButton.setEnabled(true);
                         } else {
                             paymentAmount.setText("Amount: Not set");
                             confirmPaymentButton.setEnabled(false);
-                            Log.w("PaymentFragment", "Price not set or invalid for walker: " + walkerId);
+                            Log.w("PaymentFragment", "Price not set or invalid for walker: " + walkerId + ", price: " + price);
+                            Toast.makeText(getContext(), "Price not set by service provider", Toast.LENGTH_SHORT).show();
                         }
                     }
 
@@ -77,6 +93,7 @@ public class PaymentFragment extends Fragment {
                         Log.e("PaymentFragment", "Failed to fetch walker data: " + error.getMessage());
                         paymentAmount.setText("Amount: Error");
                         confirmPaymentButton.setEnabled(false);
+                        Toast.makeText(getContext(), "Failed to load price", Toast.LENGTH_SHORT).show();
                     }
                 });
             }
@@ -86,6 +103,7 @@ public class PaymentFragment extends Fragment {
                 Log.e("PaymentFragment", "Failed to fetch appointment data: " + error.getMessage());
                 paymentAmount.setText("Amount: Error");
                 confirmPaymentButton.setEnabled(false);
+                Toast.makeText(getContext(), "Failed to load appointment", Toast.LENGTH_SHORT).show();
             }
         });
 

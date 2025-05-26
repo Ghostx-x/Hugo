@@ -13,10 +13,12 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.hugo.R;
+import com.example.hugo.bottomnavbar.Profile.MyBookingsFragment;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -25,9 +27,13 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class BookingFragment extends Fragment {
@@ -158,6 +164,7 @@ public class BookingFragment extends Fragment {
         }
 
         String userId = user.getUid();
+        String userEmail = user.getEmail();
         DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(userId);
         userRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -179,49 +186,43 @@ public class BookingFragment extends Fragment {
                             return;
                         }
 
-                        String bookedTime = selectedDay + ", " + selectedTimeSlot;
+                        // Convert selectedDay to weekDay_monthName_dayOfMonth format
+                        String formattedDate = formatDate(selectedDay);
+                        if (formattedDate == null) {
+                            Log.w(TAG, "Invalid date format: " + selectedDay);
+                            Toast.makeText(getContext(), "Invalid date format", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
 
-                        DatabaseReference bookingsRef = FirebaseDatabase.getInstance()
-                                .getReference("Bookings")
-                                .child(userId)
-                                .push();
-                        String bookingId = bookingsRef.getKey();
-                        Map<String, Object> booking = new HashMap<>();
-                        booking.put("bookedUserId", providerId);
-                        booking.put("bookedUserName", provider.name != null ? provider.name : "Unknown");
-                        booking.put("bookedUserPhotoUrl", provider.profileImageUrl != null ? provider.profileImageUrl : "");
-                        booking.put("bookedTime", bookedTime);
-                        booking.put("timestamp", System.currentTimeMillis());
-                        booking.put("status", "pending");
+                        DatabaseReference appointmentsRef = FirebaseDatabase.getInstance().getReference("Appointments");
+                        String appointmentId = appointmentsRef.push().getKey();
+                        Map<String, Object> appointment = new HashMap<>();
+                        appointment.put("uniqueID", appointmentId);
+                        appointment.put("userEmail", userEmail);
+                        appointment.put("dogWalkerId", providerId);
+                        appointment.put("serviceName", "Dog Walking");
+                        appointment.put("weekDay_monthName_dayOfMonth", formattedDate);
+                        appointment.put("time", selectedTimeSlot);
+                        appointment.put("serviceDuration", "1 hr");
+                        appointment.put("status", "Pending");
 
-                        DatabaseReference notificationsRef = FirebaseDatabase.getInstance()
-                                .getReference("Notifications")
-                                .child(providerId)
-                                .push();
-                        Map<String, Object> notification = new HashMap<>();
-                        notification.put("bookingId", bookingId);
-                        notification.put("userId", userId);
-                        notification.put("userName", currentUser.name != null ? currentUser.name : "Unknown");
-                        notification.put("bookedTime", bookedTime);
-                        notification.put("timestamp", System.currentTimeMillis());
-                        notification.put("status", "pending");
-
-                        bookingsRef.setValue(booking)
+                        appointmentsRef.child(appointmentId).setValue(appointment)
                                 .addOnSuccessListener(aVoid -> {
-                                    notificationsRef.setValue(notification)
-                                            .addOnSuccessListener(aVoid2 -> {
-                                                Log.d(TAG, "Booking and notification saved: day=" + selectedDay + ", slot=" + selectedTimeSlot);
-                                                Toast.makeText(getContext(), "Booking confirmed for " + bookedTime, Toast.LENGTH_SHORT).show();
-                                                getParentFragmentManager().popBackStack();
-                                            })
-                                            .addOnFailureListener(e -> {
-                                                Log.e(TAG, "Failed to save notification: " + e.getMessage());
-                                                Toast.makeText(getContext(), "Failed to send notification", Toast.LENGTH_SHORT).show();
-                                            });
+                                    Log.d(TAG, "Appointment saved: id=" + appointmentId + ", date=" + formattedDate + ", time=" + selectedTimeSlot);
+                                    Toast.makeText(getContext(), "Booking confirmed for " + formattedDate + " at " + selectedTimeSlot, Toast.LENGTH_SHORT).show();
+                                    // Refresh MyBookingsFragment
+                                    FragmentActivity activity = getActivity();
+                                    if (activity instanceof FragmentActivity) {
+                                        Fragment fragment = activity.getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+                                        if (fragment instanceof MyBookingsFragment) {
+                                            ((MyBookingsFragment) fragment).loadBookings();
+                                        }
+                                    }
+                                    getParentFragmentManager().popBackStack();
                                 })
                                 .addOnFailureListener(e -> {
-                                    Log.e(TAG, "Failed to save booking: " + e.getMessage());
-                                    Toast.makeText(getContext(), "Failed to confirm booking", Toast.LENGTH_SHORT).show();
+                                    Log.e(TAG, "Failed to save appointment: " + e.getMessage());
+                                    Toast.makeText(getContext(), "Failed to confirm booking: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                                 });
                     }
 
@@ -239,5 +240,18 @@ public class BookingFragment extends Fragment {
                 Toast.makeText(getContext(), "Failed to load user data", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private String formatDate(String dateStr) {
+        try {
+            SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+            SimpleDateFormat outputFormat = new SimpleDateFormat("EEEE MMMM d", Locale.US);
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(inputFormat.parse(dateStr));
+            return outputFormat.format(calendar.getTime());
+        } catch (ParseException e) {
+            Log.e(TAG, "Failed to parse date: " + dateStr, e);
+            return null;
+        }
     }
 }

@@ -24,13 +24,13 @@ import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.hugo.R;
-import com.example.hugo.bottomnavbar.Profile.PaymentFragment;
 import com.example.hugo.bottomnavbar.Search.ViewProfileFragment;
 
 import java.util.List;
 
 public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingViewHolder> {
 
+    private static final String TAG = "BookingAdapter";
     private List<Booking> bookings;
     private Context context;
     private FragmentManager fragmentManager;
@@ -45,12 +45,14 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
     @Override
     public BookingViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.item_booking, parent, false);
+        Log.d(TAG, "Creating view holder for item_booking");
         return new BookingViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull BookingViewHolder holder, int position) {
         Booking booking = bookings.get(position);
+        Log.d(TAG, "Binding booking: " + booking.bookedUserName + ", time: " + booking.bookedTime);
         holder.userName.setText(booking.bookedUserName);
         holder.bookingTime.setText("Booked for: " + booking.bookedTime);
         holder.status.setText("Status: " + booking.status);
@@ -62,7 +64,7 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
                 Bitmap circularBitmap = getCircularBitmap(bitmap);
                 holder.userImage.setImageBitmap(circularBitmap);
             } catch (Exception e) {
-                Log.e("BookingAdapter", "Failed to load profile image: " + e.getMessage(), e);
+                Log.e(TAG, "Failed to load profile image: " + e.getMessage(), e);
                 holder.userImage.setImageResource(R.drawable.ic_profile);
             }
         } else {
@@ -70,9 +72,9 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
         }
 
         holder.viewDetailsButton.setOnClickListener(v -> {
-            Log.d("BookingAdapter", "View Details clicked, bookedUserId: " + booking.bookedUserId);
+            Log.d(TAG, "View Details clicked, bookedUserId: " + booking.bookedUserId);
             if (booking.bookedUserId == null || booking.bookedUserId.isEmpty()) {
-                Log.w("BookingAdapter", "Invalid bookedUserId");
+                Log.w(TAG, "Invalid bookedUserId");
                 Toast.makeText(context, "Cannot view profile: Invalid user ID", Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -87,15 +89,15 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
         });
 
         holder.payButton.setOnClickListener(v -> {
-            Log.d("BookingAdapter", "Pay button clicked for booking with user: " + booking.bookedUserName);
-            if (booking.bookedUserId == null || booking.bookedUserId.isEmpty()) {
-                Log.w("BookingAdapter", "Invalid bookedUserId for payment");
+            Log.d(TAG, "Pay button clicked for booking with user: " + booking.bookedUserName + ", appointmentId: " + booking.appointmentId);
+            if (booking.appointmentId == null || booking.appointmentId.isEmpty()) {
+                Log.w(TAG, "Invalid appointmentId for payment");
                 Toast.makeText(context, "Cannot process payment: Invalid appointment ID", Toast.LENGTH_SHORT).show();
                 return;
             }
             PaymentFragment paymentFragment = new PaymentFragment();
             Bundle args = new Bundle();
-            args.putString("appointmentId", booking.bookedUserId);
+            args.putString("appointmentId", booking.appointmentId);
             paymentFragment.setArguments(args);
 
             try {
@@ -104,7 +106,7 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
                         .addToBackStack(null)
                         .commit();
             } catch (Exception e) {
-                Log.e("BookingAdapter", "Error navigating to PaymentFragment: " + e.getMessage());
+                Log.e(TAG, "Error navigating to PaymentFragment: " + e.getMessage());
                 Toast.makeText(context, "Navigation error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
@@ -112,10 +114,10 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
 
     @Override
     public int getItemCount() {
+        Log.d(TAG, "Item count: " + bookings.size());
         return bookings.size();
     }
 
-    // Helper method to transform a bitmap into a circular shape
     private Bitmap getCircularBitmap(Bitmap bitmap) {
         int size = Math.min(bitmap.getWidth(), bitmap.getHeight());
         Bitmap output = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);

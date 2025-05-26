@@ -20,7 +20,7 @@ public class TimeSlotAdapter extends RecyclerView.Adapter<TimeSlotAdapter.TimeSl
     private int selectedPosition = -1;
 
     public TimeSlotAdapter(List<String> timeSlots, OnTimeSlotClickListener clickListener) {
-        this.timeSlots = new ArrayList<>(timeSlots); // Create a copy to avoid external modification
+        this.timeSlots = new ArrayList<>(timeSlots);
         this.clickListener = clickListener;
     }
 
@@ -37,10 +37,13 @@ public class TimeSlotAdapter extends RecyclerView.Adapter<TimeSlotAdapter.TimeSl
         holder.timeButton.setText(timeSlot);
         holder.timeButton.setSelected(position == selectedPosition);
         holder.timeButton.setOnClickListener(v -> {
-            selectedPosition = position;
-            notifyDataSetChanged();
-            if (clickListener != null) {
-                clickListener.onTimeSlotClick(timeSlot);
+            int currentPosition = holder.getAdapterPosition();
+            if (currentPosition != RecyclerView.NO_POSITION) {
+                selectedPosition = currentPosition;
+                notifyDataSetChanged();
+                if (clickListener != null) {
+                    clickListener.onTimeSlotClick(timeSlots.get(currentPosition));
+                }
             }
         });
     }

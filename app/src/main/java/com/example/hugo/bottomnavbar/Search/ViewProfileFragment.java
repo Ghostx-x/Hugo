@@ -152,6 +152,7 @@ public class ViewProfileFragment extends Fragment {
         });
 
         bookButton.setOnClickListener(v -> {
+            Log.d(TAG, "Book button clicked for userId: " + userId);
             getParentFragmentManager()
                     .beginTransaction()
                     .replace(R.id.fragment_container, BookingFragment.newInstance(userId))
@@ -198,11 +199,8 @@ public class ViewProfileFragment extends Fragment {
 
                 DataSnapshot dogsSnapshot = snapshot.child("dogs");
                 Log.d(TAG, "Dog data snapshot: " + dogsSnapshot.toString());
-                Log.d(TAG, "Does dogs node exist? " + dogsSnapshot.exists());
-                Log.d(TAG, "Number of dogs: " + dogsSnapshot.getChildrenCount());
                 User.Dog dog = null;
                 for (DataSnapshot dogSnapshot : dogsSnapshot.getChildren()) {
-                    Log.d(TAG, "Dog snapshot: " + dogSnapshot.toString());
                     try {
                         dog = new User.Dog();
                         dog.name = dogSnapshot.child("name").getValue(String.class);
@@ -318,7 +316,6 @@ public class ViewProfileFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        // Remove listeners to prevent memory leaks
         if (userRef != null && userDataListener != null) {
             userRef.removeEventListener(userDataListener);
         }
@@ -336,7 +333,7 @@ public class ViewProfileFragment extends Fragment {
                     Bitmap circularBitmap = getCircularBitmap(bitmap);
                     getActivity().runOnUiThread(() -> {
                         imageView.setImageBitmap(circularBitmap);
-                        Log.d(TAG, imageType + " image loaded (Base64) for " + (imageType.equals("Dog") ? "dog: " + ((TextView) getView().findViewById(R.id.dog_name)).getText() : "user: " + profileName.getText()));
+                        Log.d(TAG, imageType + " image loaded (Base64)");
                     });
                 } else {
                     getActivity().runOnUiThread(() -> {
