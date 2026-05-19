@@ -32,7 +32,7 @@ A mobile app that:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/<your-username>/hugo.git
+   git clone https://github.com/Ghostx-x/Hugo.git
    cd hugo
    ```
 
